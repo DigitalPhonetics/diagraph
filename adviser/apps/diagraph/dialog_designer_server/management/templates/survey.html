@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- <p style="text-align: center; padding-bottom: 2%;"></p> -->
+
+<div class="modal" tabindex="-1" role="dialog" id='submitModal' data-backdrop="static" data-keyboard="false" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Survey Submitted</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Thank you for your feedback!</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" href="{% url 'home' %}">Continue</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <h1 class="mb-4 mt-4">Survey</h1>
+  <form id="survey_form" onsubmit="return submit_form(event)" method="POST">
+    {% csrf_token %}
+
+    <div class="card mt-5 mb-3">
+      <div class="card-header">
+          <h4>Bug Report</h4>
+      </div>
+      <div class="card-body">
+        
+        <p class="card-title" style="padding-top: 2%"><b>Please describe any technical problems you discovered during the study</b></p>
+        <div class="form-group">
+          <textarea class="form-control" id="bug_report_frei" rows="4" ></textarea>
+        </div> 
+      </div>
+    </div>
+    
+
+    <div class="card mt-5 mb-3">
+      <div class="card-header">
+          <h4>Feedback to User Experience</h4>
+      </div>
+      <div class="card-body">
+        <p class="card-title" style="padding-top: 2%"><b>Please mark how much you agree with the following statements</b> </p>
+
+        <table
+        class="table table-striped"
+        style="width: 70%; margin-top: 2%; margin-left: 15%; margin-bottom: 2%">
+        <thead>
+          <tr>
+            <td scope="col" />
+            <td scope="col">
+              Strongly Disagree
+            </td>
+            <td scope="col">
+              Disagree
+            </td>
+            <td scope="col">
+              Neither Agree Nor Disagree
+            </td>
+            <td scope="col">
+              Agree
+            </td>
+            <td scope="col">
+              Strongly Agree
+            </td>            
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="sus_1">
+            <td scope="row">
+              I think that I would like to use this system frequently.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_1" id="sus_1_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_1" id="sus_1_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_1" id="sus_1_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_1" id="sus_1_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_1" id="sus_1_5" value="5" required>
+            </td>
+
+          </tr>
+
+          <tr id="sus_2">
+            <td scope="row">
+              I found the system unnecessarily complex.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_2" id="sus_2_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_2" id="sus_2_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_2" id="sus_2_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_2" id="sus_2_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_2" id="sus_2_5" value="5" required>
+            </td>
+          </tr> 
+          
+          <tr id="sus_3">
+            <td scope="row">
+              I thought the system was easy to use.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_3" id="sus_3_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_3" id="sus_3_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_3" id="sus_3_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_3" id="sus_3_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_3" id="sus_3_5" value="5" required>
+            </td>
+          </tr>
+          
+          <tr id="sus_4">
+            <td scope="row">
+              I think that I would need support of a technical person to be able to use this system.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_4" id="sus_4_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_4" id="sus_4_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_4" id="sus_4_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_4" id="sus_4_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_4" id="sus_4_5" value="5" required>
+            </td>
+          </tr>
+          
+          <tr id="sus_5">
+            <td scope="row">
+              I found the various functions in this system were well integrated.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_5" id="sus_5_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_5" id="sus_5_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_5" id="sus_5_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_5" id="sus_5_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_5" id="sus_5_5" value="5" required>
+            </td>
+          </tr>
+          
+          <tr id="sus_6">
+            <td scope="row">
+              I thought there was too much inconsistency in this system.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_6" id="sus_6_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_6" id="sus_6_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_6" id="sus_6_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_6" id="sus_6_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_6" id="sus_6_5" value="5" required>
+            </td>
+          </tr>  
+          
+          <tr id="sus_7">
+            <td scope="row">
+              I would imagine that most peopel would learn to use this system very quickly.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_7" id="sus_7_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_7" id="sus_7_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_7" id="sus_7_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_7" id="sus_7_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_7" id="sus_7_5" value="5" required>
+            </td>
+          </tr>
+
+          <tr id="sus_8">
+            <td scope="row">
+              I found the system very cumbersome to use.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_8" id="sus_8_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_8" id="sus_8_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_8" id="sus_8_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_8" id="sus_8_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_8" id="sus_8_5" value="5" required>
+            </td>
+          </tr>
+
+
+          <tr id="sus_9">
+            <td scope="row">
+              I felt very confident using the the system.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_9" id="sus_9_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_9" id="sus_9_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_9" id="sus_9_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_9" id="sus_9_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_9" id="sus_9_5" value="5" required>
+            </td>
+          </tr>
+
+          <tr id="sus_10">
+            <td scope="row">
+              I needed to learn a lot of things before I could get going with this system.
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_10" id="sus_10_1" value="1" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_10" id="sus_10_2" value="2" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_10" id="sus_10_3" value="3" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_10" id="sus_10_4" value="4" required>
+            </td>
+            <td style="text-align: center">
+              <input class="form-check-input" type="radio" name="sus_10" id="sus_10_5" value="5" required>
+            </td>
+          </tr>          
+
+        </tbody>
+      </table>
+
+        <p class="card-title" style="padding-top: 2%"><b>What did you like about the dialog designer?</b> </p>
+        <div class="form-group">
+          <textarea class="form-control" id="positive_feedback_frei" rows="4" ></textarea>
+        </div>
+        
+        <p class="card-title" style="padding-top: 2%"><b>What did you dislike about the dialog designer? </b></p>
+        <div class="form-group">
+          <textarea class="form-control" id="negative_feedback_frei" rows="4" ></textarea>
+        </div>
+
+        <p class="card-title" style="padding-top: 2%"><b>Do you have any other feedback?</b> </p>
+        <div class="form-group">
+          <textarea class="form-control" id="other_feedback_frei" rows="4" ></textarea>
+        </div>       
+
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success mb-4" onclick="validate_form()">Submit</button>
+  </form>
+</div>
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+{{ block.super }}  
+
+<script>
+
+function validate_form() {
+  var elements = document.getElementById("survey_form").elements;
+  for (var i = 0, element; element = elements[i++];) {
+    if (element.type == "radio"){
+      var valid = element.checkValidity()
+      if (!valid){
+        var table = document.getElementById(element.name + '_table');
+        // Handles the additional quesions which are hidden and optional
+        if (table){
+          table.style.borderStyle = 'dotted';
+          table.style.borderWidth = '2px';
+          table.style.borderColor = 'red';
+        };
+      }
+    }
+    else if (element.type == "textarea"){
+      var valid = element.checkValidity()
+      if (!valid){
+        element.style.borderStyle = 'solid';
+        element.style.borderColor = 'red';
+      }
+      else {
+        element.style.borderColor = 'grey';
+      }
+    };
+  };
+};
+
+
+function submit_form(event){
+  event.preventDefault();
+  var elements = document.getElementById("survey_form").elements;
+  var survey_results = {};
+  var checkbox_device = [];
+  var checkbox_when = [];
+  var checkbox_when_not = [];
+  for (var i = 0, element; element = elements[i++];) {
+    if (element.type == "radio"){
+      var valid = element.checkValidity()
+      if (!valid){
+        var table = document.getElementById(element.name + '_table');
+        // Handles the additional quesions which are hidden and optional
+        if (table){
+          table.style.borderStyle = 'solid';
+          table.style.borderColor = 'red';
+        };
+      }
+      else{
+        var myRadio = $(`input[name=${element.name}]`);
+        survey_results[element.name] = myRadio.filter(":checked").val();
+      };
+    }
+    else if (element.type == "textarea"){
+      var valid = element.checkValidity()
+      if (!valid){
+        element.style.borderStyle = 'solid';
+        element.style.borderColor = 'red';
+      }
+      else {
+        element.style.borderColor = 'grey';
+        survey_results[element.id] = element.value;
+      }
+    }
+  };
+  if (document.getElementById("survey_form").checkValidity()){
+    let CSRFtoken = $('input[name=csrfmiddlewaretoken]').val(); // get the value of CSRF token
+    // send to django
+    console.log(survey_results);
+    $.post( "{% url 'log_survey_results' %}",
+    {
+      survey_dict: JSON.stringify(survey_results),
+      csrfmiddlewaretoken: CSRFtoken }
+      ).then(response => {
+        $('#submitModal').on('shown.bs.modal', function () {
+          $('#submitModal').trigger('focus')
+        })
+        $('#submitModal').modal('show');
+      });
+      return true;
+    }
+    else{
+      return false;
+    };
+  
+};
+
+</script> 
+
+<style>
+.btn-secondary.active, .btn-secondary:active {
+    color: white !important;
+    background: #00BEFF !important;
+    border-color: #00BEFF !important;
+}
+
+</style>
+{% endblock %}

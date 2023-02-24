@@ -1,0 +1,13 @@
+.react-flow__node {
+	border-radius: 4px;
+	box-shadow: 0px 0px 5px #888888;
+}
+
+.react-flow__node:hover {
+	box-shadow: 0px 0px 5px #2a81c1;
+}
+
+.dialog_answer {
+	position: 'relative';
+	margin: '7px';
+}

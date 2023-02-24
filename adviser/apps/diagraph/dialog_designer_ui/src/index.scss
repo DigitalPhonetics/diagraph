@@ -1,0 +1,376 @@
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  // --st-modal-transition: none !important;
+}
+
+.logicEditor {
+  width: 40vw;
+}
+
+.leftConnector {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  left: -7px;
+  border-radius: 100%;
+  background-color: #555;
+  border: 1px solid #fff;
+}
+
+.leftConnectorHitbox:hover {
+  background: #FFCA3A!important;
+  border: 1px solid white !important;
+}
+
+
+.Modal-module_modalCloseIcon__20QFz {
+  display: block;
+  width: 20px !important;
+  height: 20px !important;
+  top: calc(var(--st-dialog-padding) - 5px) !important;
+}
+
+.react-flow__edge {
+  &.selected {
+    .react-flow__edge-path {
+      stroke: #FFCA3A!important;
+      stroke-width: 1.5pt!important;
+    }
+  }
+ 
+}
+
+.react-flow__edge-path {
+  stroke: #1899e9!important;
+  stroke-width: 1.5pt!important;
+}
+
+.react-flow__edge-path:hover {
+  stroke: #FFCA3A!important;
+  stroke-width: 1.5pt!important;
+}
+
+
+
+.react-flow__node-startNode {
+	border-radius: 6px;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #8AC926;
+  padding: 7px;
+  text-align: center;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+
+.react-flow__node-userResponseNode {
+	border-radius: 6px;
+  border-color: #757575;
+  border-width: 1px;
+  border-style: solid;
+  background-color: white;
+  padding: 0px;
+  max-width: 300px;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+.react-flow__node-userResponseNode:hover {
+  border-color: #FFCA3A;
+  background-color: white;
+}
+
+
+.react-flow__node-userResponseNode.selected{
+  border-color: #757575;
+  box-shadow: 0 0 5px #757575;
+}
+
+
+.answer {
+  position: relative;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 1px;
+  margin-bottom: 5px;
+  border-top: 1px solid #d3d3d3;
+  border-bottom: 1px solid #d3d3d3;
+  border-left: 1px solid #d3d3d3;
+
+}
+
+.answer-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 40px;
+  margin-left: 10px;
+}
+
+.answer:hover {
+  border-color: #FFCA3A;
+  background-color: #FFCA3A;
+  cursor: text;
+}
+
+.else-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 40px;
+  margin-left: 20px;
+  text-align: center;
+}
+
+.faq-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 40px;
+}
+.faq:hover {
+  border-color: #FFCA3A;
+  background-color: #FFCA3A;
+  cursor: text;
+}
+
+
+.variable {
+  max-width: 75%;
+  margin: auto;
+  margin-bottom: 10px;
+  margin-top: 2px;
+  text-align: center;
+  background: #f0f0f0;
+  border-color: #4518e9;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
+.variable-edit {
+  max-width: 75%;
+  margin: auto;
+  margin-bottom: 10px;
+  margin-top: 2px;
+  text-align: center;
+  background: #f0f0f0;
+  border-color: #4518e9;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
+.variable-edit:hover {
+  cursor: text;
+  background: #FFCA3A;
+  border-color: #FFCA3A;
+}
+
+.logic-variable{
+  max-width: 75%;
+  margin: auto;
+  padding-left: 3px;
+  padding-right: 3px;
+  margin-bottom: 10px;
+  margin-top: 2px;
+  text-align: center;
+  background: #f0f0f0;
+  border-color: #ffa216;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
+.logic-variable:hover {
+  cursor: text;
+  background: #FFCA3A;
+  border-color: #FFCA3A;
+}
+.logic-variable-unfilled{
+  max-width: 75%;
+  margin: auto;
+  padding-left: 3px;
+  padding-right: 3px;
+  margin-bottom: 10px;
+  margin-top: 2px;
+  text-align: center;
+  background: #f0f0f0;
+  border-color: #ff1e16;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
+.logic-variable-unfilled:hover {
+  cursor: text;
+  background: #FFCA3A;
+  border-color: #FFCA3A;
+}
+
+.variable:hover {
+  cursor: text;
+}
+
+.variable-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.system-text {
+  padding: 7px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  margin-right: 7px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-block-end: 0;
+}
+
+.system-text:hover {
+  background-color: #FFCA3A;
+  cursor: text;
+}
+
+
+
+.react-flow__node-infoNode {
+	border-radius: 6px;
+  border-color: #1899e9;
+  border-width: 1px;
+  border-style: solid;
+  background-color: white;
+  padding-left: 7px;
+  padding-top: 7px;
+
+  max-width: 300px;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+.react-flow__node-infoNode:hover {
+  border-color: #FFCA3A;
+  background-color: white;
+}
+
+
+.react-flow__node-infoNode.selected{
+  border-color: #1899e9;
+  box-shadow: 0 0 5px #1899e9;
+}
+
+
+
+.react-flow__node-userInputNode {
+	border-radius: 6px;
+  border-color: #4518e9;
+  border-width: 1px;
+  border-style: solid;
+  background-color: white;
+  padding-left: 7px;
+  padding-top: 7px;
+
+  max-width: 300px;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+.react-flow__node-userInputNode:hover {
+  border-color: #FFCA3A;
+  background-color: white;
+}
+
+
+.react-flow__node-userInputNode.selected{
+  border-color: #4518e9;
+  box-shadow: 0 0 5px #4518e9;
+}
+
+
+
+
+.react-flow__node-logicNode {
+	border-radius: 6px;
+  border-color: #ffa216;
+  border-width: 1px;
+  border-style: solid;
+  background-color: white;
+  padding-left: 7px;
+  padding-top: 7px;
+
+  max-width: 300px;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+.react-flow__node-logicNode:hover {
+  border-color: #FFCA3A;
+  background-color: white;
+}
+
+
+.react-flow__node-logicNode.selected{
+  border-color: #ffa216;
+  box-shadow: 0 0 5px #ffa216;
+}
+
+
+
+
+.react-flow__node-variableUpdateNode {
+	border-radius: 6px;
+  border-color: #4ba408;
+  border-width: 1px;
+  border-style: solid;
+  background-color: white;
+  padding: 0px;
+  max-width: 300px;
+
+  .react-flow__handle:hover {
+    background: #FFCA3A;
+  }
+}
+
+.react-flow__node-variableUpdateNode:hover {
+  border-color: #FFCA3A;
+  background-color: white;
+}
+
+
+.react-flow__node-variableUpdateNode.selected{
+  border-color: #4ba408;
+  box-shadow: 0 0 5px #4ba408;
+}

@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  # database:
+  #   image: mysql:8
+  #   volumes:
+  #     - diagraph-db-data:/var/lib/mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: adminpwd
+  #     MYSQL_DATABASE: adviser_dialogdesigner
+  #     MYSQL_USER: adviser
+  #     MYSQL_PASSWORD: your_password
+  #   ports:
+  #     - "3306:3306"
+  # router:
+  #   build: ./router
+  #   volumes:
+  #     - .:/router
+  #   ports:
+  #     - "8081:8081"
+  #     - "8083:8083"
+  django:
+    build:
+      context: .
+      dockerfile: ./adviser/apps/diagraph/dialog_designer_server/Dockerfile
+    # command: python manage.py runserver runserver 0.0.0.0:8000
+    volumes:
+      - .:/django_code
+    ports:
+      - "8000:8000"
+    # depends_on:
+    #   - database
+  # diagraph:
+  #   build: ./adviser/apps/diagraph
+  #   command: python test.py tree --debug --noconsole
+  #   volumes:
+  #     - type: bind
+  #       source: ./adviser
+  #       target: ./django_code
+    # depends_on:
+      # - database
+      # - router
+
+volumes:
+  diagraph-db-data:

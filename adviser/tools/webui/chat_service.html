@@ -1,0 +1,261 @@
+<html>
+
+<!-- Bootstrap -->
+<script>
+    AUTOBAHN_DEBUG = true;
+</script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="./autobahn.min.js" type='text/javascript'></script>
+<link href="https://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+
+<style>
+    .footer
+    {
+        position: absolute;
+        bottom:30px;
+        left:0px;
+        right:0px;
+        height:50px;
+        margin-bottom:0px;
+        display: flex;
+    }
+    .messagebox
+    {
+        padding: 35px;
+        height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+    .speech-bubble-system {
+        position: relative;
+        background: #02beff;
+        border-radius: .4em;
+        text-align: left;
+        width: auto;
+        float: left;
+        clear: both;
+        margin-bottom: 5px;
+        margin-top: 5px;
+        padding-bottom: 5px;
+    }
+    .speech-bubble-system:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 0;
+        height: 0;
+        border: 21px solid transparent;
+        border-right-color: #02beff;
+        border-left: 0;
+        border-top: 0;
+        margin-top: -10.5px;
+        margin-left: -21px;
+    }
+    .speech-bubble-user {
+        position: relative;
+        background: #eeeeee;
+        border-radius: .4em;
+        text-align: right;
+        float: right;
+        clear: both;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    .speech-bubble-user:after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 0;
+        height: 0;
+        border: 21px solid transparent;
+        border-left-color: #eeeeee;
+        border-right: 0;
+        border-top: 0;
+        margin-top: -10.5px;
+        margin-right: -21px;
+    }
+    .message {
+        padding: 5px;
+        color: black;
+    }
+    .system {
+        margin-left: 5px;
+        margin-right: 5px;
+        margin-top: 5px;
+        background: rgb(252, 252, 252);
+        border-radius: .4em;
+        padding: 5px;
+    }
+</style>
+
+<script>
+    var messages = [];
+
+    function partialApply(fn, ...args) {
+        return fn.bind(null, ...args);
+    }
+
+    function Sleep(milliseconds) {
+        return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    class Service {
+        constructor(identifier, transport = {url: "ws://127.0.0.1:8080/ws", realm: 'adviser'}) {
+            this._identifier = identifier
+            this._connection = new autobahn.Connection(transport);
+            this._connection.onopen = partialApply(this._on_open, this);
+            this._connection.onclose = partialApply(this._on_close, this);
+            this._session = null;
+            this.ready = false;
+        }
+
+        subscribe(session) {
+            throw new Error('You have to implement the method subscribe (subsribing to all topics you need)!');
+        }
+
+        register_service(that, session) {
+            throw new Error('You have to implement the method register (adding all subscribed and published topics)!');
+        }
+
+        connect() {
+            this._connection.open();
+        }
+
+        on_dialog_start(that, user_id) {
+            // event handler, overwrite if needed
+            console.log('dialog started for user', user_id);
+        }
+
+        on_dialog_end(that, user_id) {
+            // event handler, overwrite if needed
+            console.log('dialog ended for user', user_id);
+        }
+
+        _on_close(that, session, details) {
+            that._session = null;
+        }
+
+        _on_dialog_start(that, user_id) {
+            that.on_dialog_start(user_id);
+            return true;
+        }
+        
+        _on_dialog_end(user_id) {
+            this.on_dialog_end(user_id)
+            return false;
+        }
+
+        _on_open(that, session, details) {
+            that._session = session;
+            // register event handlers
+            session.register(`dialogsystem.start.${that._identifier}`, partialApply(that._on_dialog_start, that));
+            session.register(`dialogsystem.end.${that._identifier}`, partialApply(that._on_dialog_end, that));
+            that.subscribe(session);
+            that.register_service(that, session);
+        }       
+    }
+
+    class Webui extends Service {
+        constructor(identifier = "webui", transport = {url: "ws://127.0.0.1:8080/ws", realm: 'adviser'}) {
+            super(identifier, transport);
+        }
+
+        subscribe(session) {
+            session.subscribe("sys_utterance", this.on_sys_utterance, {match: "prefix"})
+        }
+
+        register_service(that, session) {
+            let sub_topics = {"on_sys_utterance": ["sys_utterance"]};
+            let sub_topics_queued = {};
+            let pub_topics = {"on_usr_utterance": ["gen_user_utterance"]};
+            session.call("dialogsystem.register", [that._identifier, sub_topics, sub_topics_queued, pub_topics]);
+        }
+
+        on_sys_utterance(args, kwargs) {
+            console.log("Event:", args, kwargs);
+            addSystemMessage([{content: kwargs['sys_utterance']}]);
+        }
+
+        on_usr_utterance(event) {
+            let user_input = $("#userinput").val();
+            addUserMessage(user_input);
+            this._session.publish('gen_user_utterance', [], {'gen_user_utterance': user_input}); 
+        }
+
+        async start_dialog() {
+            while(!this.ready) {
+                console.log("waiting...");
+                await Sleep(1000);
+            }
+            console.log("starting");
+            this._session.publish('gen_user_utterance', [], {'gen_user_utterance': ""});
+        }
+    }
+
+
+    function addUserMessage(query) {
+        /*
+        Adds a new messagebox to the message list
+
+        Args:
+            query (String): the user query
+        */
+        $("#messagelist").append(`
+            <div class="speech-bubble-user">
+                <div class="message">${query}</div>
+            </div>
+        `);
+
+        $("#messagelist").animate({ scrollTop: $('#messagelist').prop("scrollHeight")}, 500); // scroll to newest message
+        $('#userinput').val(""); // reset text
+    }
+
+    function addSystemMessage(msg_list) {
+        /*
+        Adds a new messagebox to the message list
+
+        Args:
+            qa_list (List[{question: str, answer: str}]): the user query
+        */
+        var sys_msg = '<div class="speech-bubble-system">'
+        msg_list.forEach((msg) => {
+            sys_msg += `<div class="system">
+				${msg.content}
+                </div>
+            `;
+        });
+        sys_msg += '</div></div>';
+        $("#messagelist").append(sys_msg);
+
+        $("#messagelist").animate({ scrollTop: $('#messagelist').prop("scrollHeight")}, 500); // scroll to newest message
+    }
+
+    const service = new Webui();
+    service.connect();
+    service.start_dialog();
+
+
+    function enterKeyDown(e) {
+        if(e.key === "Enter") {
+            service.on_usr_utterance(e);
+        }
+    }
+
+</script>
+
+<body>
+    <div id="messagelist" class="messagebox"></div>
+    <div class="footer">
+        <input id="userinput" placeholder="Enter your message here" style="flex:1; display:block;" onkeydown="enterKeyDown(event)"/>
+        <button type="button" class="btn btn-primary" onclick="service.on_usr_utterance(event)" style="background: #02beff; border: 0">Send</button>
+    </div>
+  
+</body>
+
+</html>

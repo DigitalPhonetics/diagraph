@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="h-100 d-flex align-items-center justify-content-center" style="width: 75vw; margin-left: auto; margin-right: auto; margin-top: 0.5em; margin-bottom: 0.5em;">
+    <div class="card">
+        <div class="card-header">
+            Create Account
+        </div>
+        <div class="card-body">
+            <form class="form-horizontal" method="post" action="">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="form-group mt-4 mb-0">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
