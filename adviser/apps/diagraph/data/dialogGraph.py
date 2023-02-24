@@ -312,13 +312,12 @@ class DialogGraph(models.Model):
             })
 
         return {'tags': sorted(tags, key=lambda x: x['id']), 'nodes': sorted(nodes, key=lambda x: x['id']), 'connections': sorted(connections, key=lambda x: x['id']), 'dataTables': tables}
-                #  GraphInfo(num_tables=len(tables), num_nodes=len(nodes), num_answers=len(answers), num_tags=len(tags))
 
 
 @receiver(post_save, sender=User)
 def init_new_user(instance, created, raw, **kwargs):
     # raw is set when model is created from loaddata.
-    if created and not raw:
+    if created and not raw and User.objects.filter(username="_TUTORIAL_").exists():
         new_user = instance
         tutorial_user = User.objects.get(username="_TUTORIAL_")
         tutorial_graph: DialogGraph = tutorial_user.graphs.get(name="Tutorial")

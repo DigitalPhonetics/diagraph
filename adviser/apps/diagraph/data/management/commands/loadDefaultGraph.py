@@ -29,8 +29,9 @@ class Command(BaseCommand):
                 # delete existing tutorial graphs
                 self.stdout.write(self.style.NOTICE(f"Deleting existing tutorial graphs..."))
                 counter = 0
-                oldGraph = tutorialUser.graphs.get(name="Tutorial")
-                oldGraph.delete()
+                if tutorialUser.graphs.filter(name="Tutorial").exists():
+                    oldGraph = tutorialUser.graphs.get(name="Tutorial")
+                    oldGraph.delete()
                 # for graph in DialogGraph.objects.filter(name="Tutorial"):
                 #     graph.delete()
                 #     counter += 1
