@@ -5,4 +5,4 @@ def chat_view(request):
         request.session.create()
     session_key = request.session.session_key
     
-    return render(request, 'chat/index.html', {"graphId": request.GET['graphId']})
+    return render(request, 'chat_ui/index.html', {"graphId": request.GET['graphId']})

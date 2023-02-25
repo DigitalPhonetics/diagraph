@@ -1,44 +1,59 @@
 version: "3.8"
 services:
-  # database:
-  #   image: mysql:8
-  #   volumes:
-  #     - diagraph-db-data:/var/lib/mysql
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: adminpwd
-  #     MYSQL_DATABASE: adviser_dialogdesigner
-  #     MYSQL_USER: adviser
-  #     MYSQL_PASSWORD: your_password
-  #   ports:
-  #     - "3306:3306"
-  # router:
-  #   build: ./router
-  #   volumes:
-  #     - .:/router
-  #   ports:
-  #     - "8081:8081"
-  #     - "8083:8083"
+  db:
+    container_name: db
+    image: postgres:15
+    volumes:
+      - diagraph-db-data:/var/lib/postgresql/data
+    env_file:
+      - "./config.env"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adviser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  router:
+    build: ./router
+    volumes:
+      - ./router:/node
+    tty: true
+    ports:
+    - "8083:8083"
+  diagraph:
+    build: 
+      context: .
+      dockerfile: ./adviser/Dockerfile
+    command: python3 /django_code/test.py tree --debug --noconsole
+    volumes:
+      - ./adviser:/django_code
+    depends_on:
+      - db
+      - router
+    tty: true
+    env_file:
+      - "./config.env"
   django:
     build:
       context: .
-      dockerfile: ./adviser/apps/diagraph/dialog_designer_server/Dockerfile
-    # command: python manage.py runserver runserver 0.0.0.0:8000
+      dockerfile: ./Dockerfile
     volumes:
-      - .:/django_code
+      - ./adviser:/django_code/adviser
+      - /apps
+      - /django_static
+    tty: true
+    depends_on:
+      - db
+      - diagraph
     ports:
-      - "8000:8000"
-    # depends_on:
-    #   - database
-  # diagraph:
-  #   build: ./adviser/apps/diagraph
-  #   command: python test.py tree --debug --noconsole
-  #   volumes:
-  #     - type: bind
-  #       source: ./adviser
-  #       target: ./django_code
-    # depends_on:
-      # - database
-      # - router
-
+     - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    env_file:
+      - "./config.env"
 volumes:
   diagraph-db-data:

@@ -67,7 +67,7 @@ def edit_graph(request):
         request.session.create()
     session_key = request.session.session_key
     
-    return render(request, 'data/editor_index.html', {"graphId": request.GET['graphId'], "user": request.user})
+    return render(request, 'dialog_designer_ui/index.html', {"graphId": request.GET['graphId'], "user": request.user})
 
 @login_required
 def load_graph(request, graphId: str):

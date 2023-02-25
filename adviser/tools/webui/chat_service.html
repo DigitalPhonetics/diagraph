@@ -106,7 +106,7 @@
     }
 
     class Service {
-        constructor(identifier, transport = {url: "ws://127.0.0.1:8080/ws", realm: 'adviser'}) {
+        constructor(identifier, transport = {url: "ws://router:8083/ws", realm: 'adviser'}) {
             this._identifier = identifier
             this._connection = new autobahn.Connection(transport);
             this._connection.onopen = partialApply(this._on_open, this);

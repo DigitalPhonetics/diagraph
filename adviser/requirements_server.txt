@@ -1,0 +1,8 @@
+crispy-bootstrap5==0.7
+Django==4.1.5
+django-crispy-forms==1.14.0
+mypy-extensions==0.4.3
+oauthlib==3.2.2
+pandas==1.5.2
+passlib==1.7.4
+psycopg2-binary

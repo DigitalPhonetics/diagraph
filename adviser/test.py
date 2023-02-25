@@ -97,12 +97,12 @@ def _init_django():
         ],
         DATABASES = {
             'default': {
-                'ENGINE': 'django.db.backends.mysql', 
-                'NAME': 'adviser_dialogdesigner',
-                'USER': 'adviser',
-                'PASSWORD': 'your_password',
-                'HOST': 'database',   # Or an IP Address that your DB is hosted on
-                'PORT': '3306',
+                'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+                'NAME': 'adviser',
+                'USER': os.environ.get('POSTGRES_USER'),
+                'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+                'HOST': 'db',   # Or an IP Address that your DB is hosted on
+                'PORT': '5432',
             }
         },
         DEBUG=True,
@@ -124,7 +124,8 @@ def _init_django():
             },
             'handlers': {
                 'chatlogfile': {
-                    'level': 'DEBUG',
+                    # 'level': 'DEBUG',
+                    # 'class': 'logging.StreamHandler'
                     'class': 'logging.FileHandler',
                     'filename': 'apps/diagraph/dialog_designer_server/logs/chat.txt'
                 }

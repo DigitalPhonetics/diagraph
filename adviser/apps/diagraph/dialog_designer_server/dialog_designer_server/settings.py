@@ -12,15 +12,19 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
+SECRET_KEY = "your_secret_key"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
 SERVER_BASE_DIR = Path(__file__).resolve().parent.parent
+import os
 import sys
 sys.path.append(BASE_DIR.as_posix())
 sys.path.append((SERVER_BASE_DIR.parent).as_posix())
 sys.path.append((SERVER_BASE_DIR / "dialog_designer_server").as_posix())
 sys.path.append((SERVER_BASE_DIR.parent / "data").as_posix())
 print(sys.path)
+
 
 # BASE_DIR = SERVER_BASE_DIR
 print("Base dir", BASE_DIR)
@@ -30,9 +34,10 @@ print("Server Base Dir", SERVER_BASE_DIR)
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG')
 
 ALLOWED_HOSTS = [
     '*'
@@ -77,6 +82,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             SERVER_BASE_DIR / "management" / "templates",
+            '/django_static/templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -98,12 +104,12 @@ WSGI_APPLICATION = 'apps.diagraph.dialog_designer_server.dialog_designer_server.
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'adviser_dialogdesigner',
-        'USER': 'adviser',
-        'PASSWORD': 'your_password',
-        'HOST': 'database',   # Or an IP Address that your DB is hosted on
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+        'NAME': 'adviser',
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'db',   # Or an IP Address that your DB is hosted on
+        'PORT': '5432',
     }
 }
 
@@ -146,9 +152,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     # SERVER_BASE_DIR / "static",
-    SERVER_BASE_DIR.parent / "dialog_designer_ui" / "build",
-    SERVER_BASE_DIR.parent / "dialog_designer_ui" / "build" / "static",
-    SERVER_BASE_DIR.parent / "chat_ui" / "build"
+    '/django_static/dialog_designer_ui/build',
+    '/django_static/dialog_designer_ui/build/static',
+    '/django_static/chat_ui/build',
+    '/django_static/chat_ui/build/static'
 ]
 
 # Default primary key field type
@@ -177,7 +184,7 @@ LOGGING = {
         'surveylogfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'logs/surveys.txt',
+            'filename': '/django_code/adviser/apps/diagraph/dialog_designer_server/logs/surveys.txt',
         },
     },
     'loggers': {

@@ -43,9 +43,9 @@ const ChatWindow = () => {
 
     useEffect(() => {
         if(connectionRef.current === undefined) {
-            console.log("CREATE CONNECTION CHAT TO HOST", window.location.hostname);
+            // console.log("CREATE CONNECTION CHAT TO HOST", window.location.hostname);
             let server = new autobahn.Connection({
-                url: `ws://${window.location.hostname}:8083/ws`,
+                url: `ws://router:8083/ws`,
                 realm: "adviser"
             });
             server.onopen = function (session, details) {	
