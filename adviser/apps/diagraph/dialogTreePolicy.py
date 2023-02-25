@@ -311,6 +311,8 @@ class DialogTreePolicy(Service):
             # greeting message: find dialog entry node
             print("FIRST TURN")
             first_node = self.get_first_node(graph)
+            if not first_node:
+                return {"tree_end_reached": True }
             self.node_id[user_id] = first_node.key
 
         sys_utterances = []
