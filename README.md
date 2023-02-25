@@ -17,5 +17,5 @@ You can find information on how to use diagraph [here](https://github.com/Digita
 3. Open a terminal and navigate to the main folder (containing `docker-compose.yml`)
 4. (RECOMMENDED) change the secret keys, usernames and passwords in the `config.env` file
 5. Run `DOCKER_BUILDKIT=1 docker-compose up --build`
-6. Wait until the build has finished (this takes a while), and until the running containers output the message `Done init pubsub system` (this may take a few additional minutes). NOTE: Depending on your machine / virtual machine limits, the chat responses might take a second to a few to appear. 
-8. Open your browser and navigate to `localhost:8000`
+6. Wait until the build has finished (this takes a while), and then wait until the running containers output the message `Done init pubsub system` (this may take a few additional minutes after the build). NOTE: Depending on your machine / virtual machine limits, the chat responses might take a second to a few to appear. 
+7. Open your browser and navigate to `localhost:8000`. There, you can create a new user and then use the system as descibed [here](https://github.com/DigitalPhonetics/diagraph/wiki).
