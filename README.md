@@ -5,6 +5,11 @@ DIAGRAPH: An open-source graphic interface for dialog flow design
 
 http://193.196.53.250:8082
 
+## User Guide
+
+https://github.com/DigitalPhonetics/diagraph/wiki
+
 ## Code
 
 * In the process of being uploaded
+
