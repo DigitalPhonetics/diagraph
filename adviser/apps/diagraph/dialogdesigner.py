@@ -2,7 +2,7 @@ from typing import Dict, Iterable
 from typing_extensions import override
 import pandas
 from io import StringIO
-from apps.diagraph.data.dialogGraph import DataTable, DialogGraph, DialogNode, NodeType, Question, Answer, DataTableColumn
+from apps.diagraph.data.dialogGraph import DataTable, DialogGraph, DialogNode, NodeType, Question, Answer, DataTableColumn, Tag
 from django.db import transaction
 from services.service import Service
 
@@ -48,8 +48,36 @@ class DialogDesigner(Service):
             await self._component._session.register(self.on_datatable_import, "dialogdesigner.datatable.import")
             await self._component._session.register(self.on_datatable_name_changed, "dialogdesigner.datatable.name.changed")
             await self._component._session.register(self.on_datatable_delete, "dialogdesigner.datatable.delete")
+            await self._component._session.register(self.on_tag_add, "dialogdesigner.tag.add")
+            await self._component._session.register(self.on_tag_delete, "dialogdesigner.tag.delete")
+            await self._component._session.register(self.on_tag_apply, "dialogdesigner.tag.apply")
+            await self._component._session.register(self.on_tag_detach, "dialogdesigner.tag.detach")
 
             self.registered = True
+
+
+    def on_tag_add(self, graphId: str, tagId: str, color: str):
+        graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
+        tag = Tag(key=tagId, color=color, graph=graph)
+        tag.save()
+
+    def on_tag_delete(self, graphId: str, tagId: str):
+        # TODO make sure to detach tag in UI 
+        graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
+        tag = graph.tags.get(key=tagId)
+        tag.delete()
+    
+    def on_tag_apply(self, graphId: str, tagId: str, nodeId: str):
+        graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
+        tag = graph.tags.get(key=tagId)
+        node = graph.nodes.get(key=nodeId)
+        node.tags.add(tag)
+
+    def on_tag_detach(self, graphId: str, tagId: str, nodeId: str):
+        graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
+        tag = graph.tags.get(key=tagId)
+        node = graph.nodes.get(key=nodeId)
+        node.tags.remove(tag)
 
     def on_graph_rename(self, graphId: str, newName: str) -> bool:
         if len(newName) > TEXT_LENGTH_LIMIT:

@@ -14,6 +14,8 @@ export interface CreateTagButtonProps {
 const TagButton = (props: CreateTagButtonProps) => {
     const [tagFieldInput, setTagFieldInput] = useState("");
     const [showTagList, setShowTagList] = useState(false);  
+    const graphId = useStoreState((state) => state.graphId);
+    const session = useStoreState((state) => state.session);
     const targetRef = useRef(null);
 
 
@@ -22,22 +24,20 @@ const TagButton = (props: CreateTagButtonProps) => {
     const applyTag = useStoreActions((actions)=> actions.applyTag);
     const colorArray = ['#FF595E', '#FFCA3A', '#8AC926', '#1982C4', '#6A4C93', '#9E101C', '#EB860A', '#06BAD6', '#0E6495', '#c3c3c3', '#7b3e19']
 
-    const attachTag = (tag: string) => {
-        applyTag({nodeId: props.nodeId, tagId: tag});
+    const attachTag = useCallback((tag: string) => {
+        applyTag({graphId: graphId, session: session!, args: {nodeId: props.nodeId, tagId: tag}});
         setShowTagList(false);
         setTagFieldInput("");
-    }
+    }, [applyTag, graphId, session, props.nodeId, setShowTagList, setTagFieldInput])
 
-    const attachNewTag = () => {
+    const attachNewTag = useCallback(() => {
         const colorIndex = tags.length % colorArray.length;
         const color = colorArray[colorIndex];
-        addNewTag({id: tagFieldInput, color: color});
-        applyTag({nodeId: props.nodeId, tagId: tagFieldInput});
+        addNewTag({graphId: graphId, session: session!, args: {id: tagFieldInput, color: color}});
+        applyTag({graphId: graphId, session: session!, args: {nodeId: props.nodeId, tagId: tagFieldInput}});
         setShowTagList(false);
         setTagFieldInput("");
-    }
-
-
+    }, [tags, colorArray, addNewTag, applyTag, graphId, session, tagFieldInput, setShowTagList, setTagFieldInput])
 
     return <div>
             <Button style={{backgroundColor: '#EB860A', border: "none", marginBottom: '1px'}} ref={targetRef} onClick={() => setShowTagList(!showTagList)}>Tag<FontAwesomeIcon style={{marginLeft: "10px"}} icon={faPlus}/></Button>
@@ -76,13 +76,15 @@ export interface AppliedTagsProps {
 export const AppliedTags = memo((props: AppliedTagsProps) => {
     const allTags = useStoreState((state) => state.tagList);
     const detachTag = useStoreActions((action) => action.detachTag);
+    const graphId = useStoreState((state) => state.graphId);
+    const session = useStoreState((state) => state.session);
 
     return <>
         {props.tags.map(tag => {
             if (allTags.find(t => t.id === tag)) {
                 const tagColor =  allTags.find(t => t.id === tag)!.color;
                 return <span key={tag} style={{float: "left", backgroundColor: tagColor, borderRadius: 5, paddingLeft: 5, paddingRight: 5, margin: 2, color: "white"}}>
-                    {props.selected && <CloseButton variant='white' style={{width: '3px', height: '3px', marginLeft: '3px', marginTop: '6px', float: "right"}} onClick={() => detachTag({nodeId: props.nodeId, tagId: tag})}/>}
+                    {props.selected && <CloseButton variant='white' style={{width: '3px', height: '3px', marginLeft: '3px', marginTop: '6px', float: "right"}} onClick={() => detachTag({graphId: graphId, session: session!, args: {nodeId: props.nodeId, tagId: tag}})}/>}
                     {tag}
                 </span>
             } else {
@@ -101,7 +103,8 @@ export const TagFilterOptions = () => {
     const isVisible = useCallback((tagId: string) => visibleTags.includes(tagId), [visibleTags]);
     const toggleTag = useStoreActions((actions) => actions.toggleTag);
     const resetVisibleTags = useStoreActions((actions) => actions.resetVisibleTags);
-   
+    const graphId = useStoreState((state) => state.graphId);
+    const session = useStoreState((state) => state.session);
 
     return <ListGroup style={{maxHeight: "80vh", overflow: "scroll"}} variant="flush">
                 <ListGroup.Item variant="secondary">
@@ -111,11 +114,11 @@ export const TagFilterOptions = () => {
                     return <ListGroup.Item key={tag.id}>
                                 {tag.id} 
                                 <span css={tagVisibleStyle(isVisible(tag.id))} onClick={() => toggleTag(tag.id)}><i className={isVisible(tag.id) ? "bi bi-eye" : "bi bi-eye-slash"}/></span>
-                                <span css={tagTrashStyle} onClick={() => deleteTag(tag.id)}><FontAwesomeIcon icon={faTrashAlt}/></span>
+                                <span css={tagTrashStyle} onClick={() => deleteTag({graphId: graphId, session: session!, args: tag.id})}><FontAwesomeIcon icon={faTrashAlt}/></span>
                             </ListGroup.Item>})} 
                 <ListGroup.Item>
-                    Knoten ohne Tag
-                    <span css={tagVisibleStyle(isVisible("kein Tag"))} onClick={() => toggleTag("kein Tag")}><i className={isVisible("kein Tag")? "bi bi-eye" : "bi bi-eye-slash"}/></span>
+                    Nodes without tag
+                    <span css={tagVisibleStyle(isVisible("no Tag"))} onClick={() => toggleTag("no Tag")}><i className={isVisible("no Tag")? "bi bi-eye" : "bi bi-eye-slash"}/></span>
                 </ListGroup.Item>
            </ListGroup>
 

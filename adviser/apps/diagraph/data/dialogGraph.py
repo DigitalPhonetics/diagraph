@@ -60,6 +60,20 @@ class DataTableColumn(models.Model):
     class Meta:
         app_label = 'data'
 
+
+class Tag(models.Model):
+    key = models.TextField()
+    color = models.TextField()
+    graph = models.ForeignKey("DialogGraph", on_delete=models.CASCADE, related_name="tags")
+
+    class Meta:
+        app_label = "data"
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=['graph', 'key'], name='unique_graph_tag_combination'
+        #     )
+        # ]
+
 class DialogNode(models.Model):
     key = models.BigIntegerField()
     graph = models.ForeignKey("DialogGraph", on_delete=models.CASCADE, related_name="nodes")
@@ -69,6 +83,7 @@ class DialogNode(models.Model):
         default=NodeType.QUESTION,
     )
     connected_node = models.ForeignKey("self", null=True, on_delete=models.SET_NULL, default=None, related_name="incoming_nodes")
+    tags = models.ManyToManyField(Tag, related_name="nodes")
 
     text = models.TextField()
     markup = models.TextField()
@@ -111,6 +126,8 @@ class Question(models.Model):
     class Meta:
         app_label = "data"
     
+
+
 
 class DialogGraph(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # unique and anonymous graph name (public links, editing) - not a
@@ -188,6 +205,7 @@ class DialogGraph(models.Model):
             nodes_by_key = {}
             answers_by_key = {}
             questions_by_key = {}
+            tag_by_key = {}
             start_node = None
 
             # clear existing values 
@@ -198,6 +216,10 @@ class DialogGraph(models.Model):
             graph = cls(owner=owner, name=graph_name) 
             graph.save()
             
+            for tag_json in data['tags']:
+                tag = Tag(key=tag_json['id'], color=tag_json['color'], graph=graph)
+                tag.save()
+                tag_by_key[tag_json['id']] = tag 
             for dialognode_json in data['nodes']:
                 # parse node info (have to create all nodes before we can create the answers because they can be linked to otherwise not yet existing nodes)
                 node = None
@@ -230,6 +252,9 @@ class DialogGraph(models.Model):
                     assert not question.key in questions_by_key, f"Question {question.key} already in dataset"
                     question.save()
                     questions_by_key[faq_json['id']] = question
+
+                for tag_id in dialognode_json['data']['tags']:
+                    node.tags.add(tag_by_key[tag_id])
             
             # parse connections
             for connection in data['connections']:
@@ -252,7 +277,7 @@ class DialogGraph(models.Model):
         nodes = []
         connections = []
         faqquestions = []
-        tags = [] # TODO re-enable tags [{'id': tag.key, 'color': tag.color} for tag in DialogNodeTag.objects.filter(version=version)]
+        tags = [{'id': tag.key, 'color': tag.color} for tag in self.tags.all()]
         tables = []
         for dialog_node in self.nodes.all():
             answers = []
@@ -299,7 +324,7 @@ class DialogGraph(models.Model):
                         'y': dialog_node.position_y,
                     },
                     "type": dialog_node.get_node_type_display(),
-                    'tags': [], # TODO enable tags [tag.key for tag in dialog_node.tags.all()],
+                    'tags': [tag.key for tag in dialog_node.tags.all()],
                     'answers': answers,
                     'questions': faqquestions
                 },

@@ -164,10 +164,14 @@ interface StoreModel  {
 	// tags
 	tagList: ITag[];
 	visibleTags: string[];
-	addNewTag: Action<StoreModel, ITag>;
-	deleteTag: Action<StoreModel, string>;
-	applyTag: Action<StoreModel, TagsArgs>;
-	detachTag: Action<StoreModel, TagsArgs>;
+	addNewTag: Thunk<StoreModel, ThunkArgs<ITag>>;
+	_addNewTag: Action<StoreModel, ITag>;
+	deleteTag: Thunk<StoreModel, ThunkArgs<string>>;
+	_deleteTag: Action<StoreModel, string>;
+	applyTag: Thunk<StoreModel, ThunkArgs<TagsArgs>>;
+	_applyTag: Action<StoreModel, TagsArgs>;
+	detachTag: Thunk<StoreModel, ThunkArgs<TagsArgs>>;
+	_detachTag: Action<StoreModel, TagsArgs>;
 	toggleTag: Action<StoreModel, string>;
 	resetVisibleTags: Action<StoreModel, boolean>;
 
@@ -207,7 +211,7 @@ const initialStore: StoreModel = {
 	redoStack: [],
 	connections: [],
 	tagList: [],
-	visibleTags: ["kein Tag"],
+	visibleTags: ["no Tag"],
 	variables: [],
 	dataTables: [],
 	_clickedAnswerId: "",
@@ -367,7 +371,7 @@ const initialStore: StoreModel = {
 				async (question) => await actions.deleteFAQQuestion({graphId: payload.graphId, session: payload.session, args: {nodeId: question.nodeId, faqId: question.id}})
 			));
 			success = success && successes.reduce((b1, b2) => b1 && b2, true);
-			old_node.data.tags.forEach((tag) => actions.detachTag({nodeId: old_node.id, tagId: tag}));
+			old_node.data.tags.forEach((tag) => actions.detachTag({graphId: payload.graphId, session: payload.session, args: {nodeId: old_node.id, tagId: tag}}));
 			successes = await Promise.all(getState().connections.map(async (conn) => 
 				(conn.source === old_node.id || conn.target === old_node.id)? 
 					await actions.deleteConnection({graphId: payload.graphId, session: payload.session, args: {sourceNodeId: conn.source, sourceHandle: conn.sourceHandle!}})
@@ -605,7 +609,7 @@ const initialStore: StoreModel = {
 			return  {
 			 ...node,
 			 data: {
-				...node.data,
+				...(node.data as any),
 				tags: []
 			}
 		 }
@@ -641,7 +645,7 @@ const initialStore: StoreModel = {
 	resetVisibleTags: action((state, payload) => {
 		state.visibleTags = !payload? state.tagList.map(tag => tag.id) : [];
 		if( state.visibleTags.length > 0) {
-			state.visibleTags.push("kein Tag");
+			state.visibleTags.push("no Tag");
 		}
 		state.nodes.forEach((node) => (node as any).isHidden = payload);
 		state.connections.forEach((conn) => conn.isHidden = payload);
@@ -655,7 +659,7 @@ const initialStore: StoreModel = {
 
 		let hiddenNodeIds = [] as string[];
 		state.nodes.forEach((node) => {
-			const isVisible = node.data.tags.length > 0? state.visibleTags.filter(tagId => node.data.tags.includes(tagId)).length > 0 : state.visibleTags.includes("kein Tag");
+			const isVisible = node.data.tags.length > 0? state.visibleTags.filter(tagId => node.data.tags.includes(tagId)).length > 0 : state.visibleTags.includes("no Tag");
 			(node as any).isHidden = !isVisible;
 			if(!isVisible) {
 				hiddenNodeIds.push(node.id);
@@ -665,31 +669,78 @@ const initialStore: StoreModel = {
 			conn.isHidden = hiddenNodeIds.includes(conn.source) || hiddenNodeIds.includes(conn.target);
 		});
 	}),	
-	addNewTag: action((state, payload) => {
+	addNewTag: thunk(async (actions, payload, {getState}) => {
+		if(getState().tagList.find((tag) => tag.id === payload.args.id)) return true; // tag already exists
+		else if(payload.session) {
+			// create new tag
+			return await payload.session.call("dialogdesigner.tag.add", [], {graphId: payload.graphId, tagId: payload.args.id, color: payload.args.color}).then(() => {
+				actions._addNewTag(payload.args);
+				actions.recordAction({fn: actions.addNewTag, inverseFn: actions.deleteTag, undoArgs: payload.args.id, redoArgs: payload.args, actionMode: payload.actionMode});
+				return true;
+			}).catch(() => false);
+		}
+		return false;
+	}),
+	_addNewTag: action((state, payload) => {
 		// push(state.undoStack, {fn: addNewTagReversible, inverseFn: deleteTagReversible, args: {tag: payload, tagId: payload.id}})
-		addNewTagReversible(state, {tagId: payload.id, tag: payload});
+		state.tagList.push(payload);
 		state.redoStack = [];
 	}),
-	deleteTag: action((state, payload) => {
-		const oldTag = state.tagList.find(tag => tag.id === payload);
-		let tagNodeIds = new Array<string>();
-		state.nodes.forEach(node => {
-			if(node.data.tags.includes(payload)) {
-				tagNodeIds.push(node.id);
-			}
-		});
-		// push(state.undoStack, {fn: deleteTagReversible, inverseFn: addNewTagReversible, args: {tagId: payload, tag: oldTag, tagNodeIds: tagNodeIds}});
-		deleteTagReversible(state, {tagId: payload});
+	deleteTag: thunk(async (actions, payload, {getState}) => {
+		actions.beginRecordingGroup(payload.actionMode);
+		// remove tag from nodes
+		const taggedNodes = getState().nodes.filter(node => node.data.tags.includes(payload.args));
+		const successes = await Promise.all(taggedNodes.map(
+			async (node) => await actions.detachTag({graphId: payload.graphId, session: payload.session, args: {nodeId: node.id, tagId: payload.args}}))
+		);
+		let success = successes.reduce((b1, b2) => b1 && b2, true);
+		
+		// delete tag
+		const oldTag = getState().tagList.find(tag => tag.id === payload.args);
+		success = success && await payload.session.call("dialogdesigner.tag.delete", [], {graphId: payload.graphId, tagId: payload.args}).then(() => {
+			actions._deleteTag(payload.args);
+			actions.recordAction({fn: actions.deleteTag, inverseFn: actions.addNewTag, undoArgs: oldTag, redoArgs: payload.args});
+			return true;
+		}).catch(() => false);
+		actions.endRecordingGroup(payload.actionMode); 
+		return success;
+	}),
+	_deleteTag: action((state, payload) => {
+		state.tagList = state.tagList.filter(tag => tag.id !== payload);
 		state.redoStack = [];
 	}),
-	applyTag: action((state, payload) => {
+	applyTag: thunk(async (actions, payload, {getState}) => {
+		if(getState().nodes.find(node => node.id === payload.args.nodeId)?.data.tags.includes(payload.args.tagId)) return true;
+		else if(payload.session) {
+			return await payload.session.call("dialogdesigner.tag.apply", [], {graphId: payload.graphId, nodeId: payload.args.nodeId, tagId: payload.args.tagId}).then(() => {
+				actions._applyTag(payload.args);
+				actions.recordAction({fn: actions.applyTag, inverseFn: actions.detachTag, undoArgs: payload.args.tagId, redoArgs: payload.args});
+				return true;
+			}).catch(() => false);
+		}
+		return false;
+	}),
+	_applyTag: action((state, payload) => {
 		// push(state.undoStack, {fn: applyTagReversible, inverseFn: detachTagReversible, args: {nodeId: payload.nodeId, tagId: payload.tagId}});
 		applyTagReversible(state, {nodeId: payload.nodeId, tagId: payload.tagId});
 		state.redoStack = [];
 	}),
-	detachTag: action((state, payload) => {
-		// push(state.undoStack, {fn: detachTagReversible, inverseFn: applyTagReversible, args: {nodeId: payload.nodeId, tagId: payload.tagId}});
-		detachTagReversible(state, {nodeId: payload.nodeId, tagId: payload.tagId});
+	detachTag: thunk(async (actions, payload, {getState}) => {
+		if(!getState().nodes.find(node => node.id === payload.args.nodeId)?.data.tags.includes(payload.args.tagId)) return true;
+		else if(payload.session) {
+			return await payload.session.call("dialogdesigner.tag.detach", [], {graphId: payload.graphId, nodeId: payload.args.nodeId, tagId: payload.args.tagId}).then(() => {
+				actions._detachTag(payload.args);
+				actions.recordAction({fn: actions.detachTag, inverseFn: actions.applyTag, undoArgs: payload.args, redoArgs: payload.args});
+				return true;
+			}).catch(() => false);
+		}
+		return false;
+	}),
+	_detachTag: action((state, payload) => {
+		let node = state.nodes.find(node => node.id === payload.nodeId);
+		if(node) {
+			node.data.tags = node.data.tags.filter(tag => tag !== payload.tagId);
+		}
 		state.redoStack = [];
 	}),
 	addVariable: action((state, payload) => {
