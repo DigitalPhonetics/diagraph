@@ -41,7 +41,7 @@ class SentenceEmbeddings():
         Returns:
             (#answers, 512)
         """
-        return torch.cat([self.encode(answer.text) for answer in node.answers.all()], dim=0)
+        return torch.cat([self.encode(answer.text) for answer in node.answers.all().order_by('index')], dim=0)
         
 
 
