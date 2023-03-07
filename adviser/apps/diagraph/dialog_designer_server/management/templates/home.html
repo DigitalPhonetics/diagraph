@@ -94,7 +94,7 @@
       {% if user.graphs.count < 10 %}
       <div style="display: flex; flex-direction: row; justify-content: center;">
         <a class="btn btn-success" href="{% url 'create_graph' %}" role='button' aria-disabled="false" style="margin-right: 0.3em;">Create a new graph</a>
-        <a class="btn btn-warning" href="{% url 'survey' %}" role="button">Take survey</a>
+        <a class="btn btn-warning" href="{% url 'survey' %}" role="button">Feedback</a>
       </div>
       {% else %}
         <div class="alert alert-warning" role="alert">
