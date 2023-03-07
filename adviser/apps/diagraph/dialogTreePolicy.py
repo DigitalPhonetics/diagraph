@@ -4,8 +4,9 @@ from attr import dataclass
 from typing import Dict, List, Tuple
 
 from sentence_transformers import SentenceTransformer
+from django.utils.html import strip_tags
 
-from apps.diagraph.data.dialogGraph import Answer, DialogNode, DialogGraph, NodeType
+from apps.diagraph.data.dialogGraph import Answer, DialogNode, DialogGraph, NodeType, ConversationLogEntry
 from apps.diagraph.parsers.answerTemplateParser import AnswerTemplateParser
 from apps.diagraph.parsers.logicParser import LogicTemplateParser
 from apps.diagraph.parsers.systemTemplateParser import SystemTemplateParser
@@ -298,7 +299,12 @@ class DialogTreePolicy(Service):
         return node, sys_utterances, False
 
 
-                
+    def log_to_database(self, graph: DialogGraph, user_id: int, sys_utterances: List[str]):
+        log = []
+        for utterance in sys_utterances:
+            log.append(ConversationLogEntry(graph=graph, user=user_id, module="POLICY", content=f"{utterance[1]}: {strip_tags(utterance[0])}"))
+        ConversationLogEntry.objects.bulk_create(log)
+
 
     @PublishSubscribe(sub_topics=['user_acts', 'beliefstate', "graph_id"], pub_topics=["sys_utterances", "node_id", 'answer_candidates', 'user_acts', 'beliefstate', 'tree_end_reached', 'node_pos', ControlChannelMessages.DIALOG_END], user_id=True)
     def choose_sys_act(self, user_acts: List[UserAct], beliefstate: dict, user_id: int, graph_id: str) -> dict(sys_utterances=str, node_id=int, answer_candidates=list, user_acts=list,beliefstate=dict, node_pos=dict):
@@ -331,6 +337,7 @@ class DialogTreePolicy(Service):
             if len(sys_utterances) > 0:
                 # tell users we don't recognize their inputs, stay at same node.
                 logging.getLogger('chat').info(f"POLICY (user: {user_id}, node: {node.key if node else 'None'}, turn: {turn_count}) - SYS UTTERANCE: {sys_utterances}")
+                self.log_to_database(graph, user_id, sys_utterances)
                 return {
                     "sys_utterances": sys_utterances,
                     "node_id": node.key,
@@ -358,6 +365,7 @@ class DialogTreePolicy(Service):
         
         print("FINAL OUTPUT", output['beliefstate'])
         print(" - ", beliefstate)
+        self.log_to_database(graph, user_id, output['sys_utterances'])
         return output
 
     def handle_node(self, user_id: str, graph: DialogGraph, node: DialogNode, user_acts: List[UserAct], beliefstate: Dict, sys_utterances: List[Tuple], tree_end_reached: bool, call_num: int):

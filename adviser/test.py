@@ -38,45 +38,19 @@ def load_console():
     user_out = ConsoleOutput(domain="", transports=f"ws://{ROUTER_HOST}:{ROUTER_PORT}/ws")
     return [user_in, user_out]
 
-def load_webui():
-    from services.hci.webui import Webui
-    return [Webui()]
+# def load_webui():
+#     from services.hci.webui import Webui
+#     return [Webui()]
 
 
-def load_nlg(backchannel: bool, domain = None):
-    if backchannel:
-        from services.nlg import BackchannelHandcraftedNLG
-        nlg = BackchannelHandcraftedNLG(domain=domain, sub_topic_domains={'predicted_BC': ''})
-    else:
-        from services.nlg.nlg import HandcraftedNLG
-        nlg = HandcraftedNLG(domain=domain)
-    return nlg
-
-
-def load_mensa_domain(backchannel: bool = False):
-    from apps.webapi.mensa import MensaDomain, MensaNLU
-    from services.policy.policy_api import HandcraftedPolicy as PolicyAPI
-    mensa = MensaDomain()
-    mensa_nlu = MensaNLU(domain=mensa)
-    mensa_bst = HandcraftedBST(domain=mensa)
-    mensa_policy = PolicyAPI(domain=mensa)
-    mensa_nlg = load_nlg(backchannel=backchannel, domain=mensa)
-    return mensa, [mensa_nlu, mensa_bst, mensa_policy, mensa_nlg]
-
-
-def load_lecturers_domain(backchannel: bool = False):
-    from utils.domain.jsonlookupdomain import JSONLookupDomain
-    from services.nlu.nlu import HandcraftedNLU
-    from services.nlg.nlg import HandcraftedNLG
-    from services.policy import HandcraftedPolicy
-    domain = JSONLookupDomain('ImsLecturers', display_name="Lecturers")
-    lect_nlu = HandcraftedNLU(domain=domain)
-    lect_bst = HandcraftedBST(domain=domain)
-    lect_policy = HandcraftedPolicy(domain=domain)
-    lect_nlg = load_nlg(backchannel=backchannel, domain=domain)
-    return domain, [lect_nlu, lect_bst, lect_policy, lect_nlg]
-
-
+# def load_nlg(backchannel: bool, domain = None):
+#     if backchannel:
+#         from services.nlg import BackchannelHandcraftedNLG
+#         nlg = BackchannelHandcraftedNLG(domain=domain, sub_topic_domains={'predicted_BC': ''})
+#     else:
+#         from services.nlg.nlg import HandcraftedNLG
+#         nlg = HandcraftedNLG(domain=domain)
+#     return nlg
 
 def _init_django():
     import os
@@ -149,8 +123,6 @@ def _init_django():
 def load_tree_policy():
     _init_django()
 
-   
-
     from apps.diagraph.similarityMatchingNLU import SimilarityMatchingNLU, SentenceEmbeddings
     from apps.diagraph.dialogTreePolicy import DialogTreePolicy
     from apps.diagraph.domain import TreeDomain
@@ -168,10 +140,9 @@ def load_tree_policy():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ADVISER 2.0 Dialog System')
-    parser.add_argument('domains', nargs='+', choices=['lecturers', 'weather', 'mensa', 'qa', "tree"],
+    parser.add_argument('domains', nargs='+', choices=["tree"],
                         help="Chat domain(s). For multidomain type as list: domain1 domain2 .. \n",
-                        default="ImsLecturers")
-    parser.add_argument('-g', '--gui', action='store_true', help="Start Webui server")
+                        default="tree")
     parser.add_argument("--noconsole", action='store_true', help="disable console in-/output")
     parser.add_argument('--asr', action='store_true', help="enable speech input")
     parser.add_argument('--tts', action='store_true', help="enable speech output")
@@ -217,23 +188,13 @@ if __name__ == "__main__":
                           logfile_basename="full_log")
 
     # load domain specific services
-    if 'lecturers' in args.domains:
-        l_domain, l_services = load_lecturers_domain(backchannel=args.bc)
-        domains.append(l_domain)
-        services.extend(l_services)
-    if 'mensa' in args.domains:
-        m_domain, m_services = load_mensa_domain(backchannel=args.bc)
-        domains.append(m_domain)
-        services.extend(m_services)
     if 'tree' in args.domains:
         t_domain, t_services = load_tree_policy()
         domains.append(t_domain)
         services.extend(t_services)
 
     # load text input
-    if args.gui:
-        services.extend(load_webui())
-    elif not args.noconsole:
+    if not args.noconsole:
         services.extend(load_console())
 
     # services.append(DialogDesigner())
@@ -243,7 +204,7 @@ if __name__ == "__main__":
     debug_logger = logger if args.debug else None
 
     ds = DialogSystem(services=services, transports=f"ws://{ROUTER_HOST}:{ROUTER_PORT}/ws")
-    if args.gui or args.noconsole: 
+    if args.noconsole: 
         # start message will be triggered from browser, once connected
         ds.run(start_messages={})
     else:

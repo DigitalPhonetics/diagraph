@@ -127,6 +127,15 @@ class Question(models.Model):
         app_label = "data"
     
 
+class ConversationLogEntry(models.Model):
+    log_index = models.BigAutoField(primary_key=True)
+    graph = models.ForeignKey("DialogGraph", on_delete=models.CASCADE, related_name='logs')
+    user = models.TextField()
+    module = models.TextField()
+    content = models.TextField()
+
+    class Meta:
+        app_label = 'data'
 
 
 class DialogGraph(models.Model):
@@ -218,8 +227,8 @@ class DialogGraph(models.Model):
             
             for tag_json in data['tags']:
                 tag = Tag(key=tag_json['id'], color=tag_json['color'], graph=graph)
-                tag.save()
                 tag_by_key[tag_json['id']] = tag 
+            Tag.objects.bulk_create(tag_by_key.values())
             for dialognode_json in data['nodes']:
                 # parse node info (have to create all nodes before we can create the answers because they can be linked to otherwise not yet existing nodes)
                 node = None
@@ -239,19 +248,23 @@ class DialogGraph(models.Model):
                 assert not node.key in nodes_by_key, f"Node {node.key} already in dataset"
                 nodes_by_key[dialognode_json['id']] = node
 
+                ansewers_to_create = []
                 for index, answer_json in enumerate(dialognode_json['data']['answers']):
                     # parse answer info and add to created nodes
                     answer = Answer(key=answer_json['id'], node=node,
                                         text=html_to_raw_text(answer_json['text']),
                                         index=index) # store answers in correct order
-                    answer.save()
                     answers_by_key[answer_json['id']] = answer
+                    ansewers_to_create.append(answer)
+                Answer.objects.bulk_create(ansewers_to_create)
                 
+                faqs_to_create = []
                 for faq_json in dialognode_json['data']['questions']:
                     question = Question(key=faq_json['id'],text=faq_json['text'], node=node)
                     assert not question.key in questions_by_key, f"Question {question.key} already in dataset"
-                    question.save()
                     questions_by_key[faq_json['id']] = question
+                    faqs_to_create.append(question)
+                Question.objects.bulk_create(faqs_to_create)
 
                 for tag_id in dialognode_json['data']['tags']:
                     node.tags.add(tag_by_key[tag_id])
@@ -341,12 +354,15 @@ class DialogGraph(models.Model):
 
 @receiver(post_save, sender=User)
 def init_new_user(instance, created, raw, **kwargs):
+    """
+    Add tutorial graph (if exists) from user _TUTORIAL_ to newly created user
+    """
     # raw is set when model is created from loaddata.
     if created and not raw and User.objects.filter(username="_TUTORIAL_").exists():
-        new_user = instance
         tutorial_user = User.objects.get(username="_TUTORIAL_")
-        tutorial_graph: DialogGraph = tutorial_user.graphs.get(name="Tutorial")
-        tutorial_graph.copyToUser(new_user)
+        if tutorial_user.graphs.filter(name="Tutorial").exists():
+            tutorial_graph: DialogGraph = tutorial_user.graphs.get(name="Tutorial")
+            tutorial_graph.copyToUser(instance) # instance = new user
 
     
 # TODO on any of the above changes, trigger reload of dialog policy (let policy handle replay? or add dialog buffer as service, and this service can trigger replay from memory)

@@ -75,3 +75,8 @@ def load_graph(request, graphId: str):
     graph = DialogGraph.objects.get(owner=request.user, uuid=graphId)
     return HttpResponse(json.dumps(graph.toJSON()))
 
+@login_required
+def dialog_logs(request, graphId: str):
+    graph = DialogGraph.objects.get(owner=request.user, uuid=graphId)
+    log = graph.logs.all().order_by('log_index')
+    return render(request, "data/dialog_log.html", {"log": log})

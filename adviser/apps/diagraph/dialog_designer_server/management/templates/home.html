@@ -81,6 +81,10 @@
                               {% csrf_token %}
                               <button class="btn btn-danger" type="submit" style="margin: 0.3em">Delete</button>
                           </form>
+                          <form action="{% url 'dialog_logs' graphId=graph.uuid %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-secondary" type="submit" style="margin: 5px">Log</button> 
+                        </form>
                       </div>
                   </td>
               </tr>

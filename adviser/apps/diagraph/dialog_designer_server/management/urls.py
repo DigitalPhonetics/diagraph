@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic.base import TemplateView
 from .views.signup import SignUpView
-from .views.graphs import graph_list, delelete_graph, rename_graph, edit_graph, create_graph, load_graph
+from .views.graphs import graph_list, delelete_graph, rename_graph, edit_graph, create_graph, load_graph, dialog_logs
 from .views.survey import survey_view, log_survey_results
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path("data/create_graph", create_graph, name='create_graph'),
     path("data/edit_graph/", edit_graph, name='edit_graph'),
     path("data/load_graph/<str:graphId>", load_graph, name='load_graph'),
+    path("data/dialog_logs/<str:graphId>",dialog_logs, name='dialog_logs'),
     path('', graph_list, name='home'),
     path('', include('data.urls')),
     path('chat/survey', survey_view, name='survey'),

@@ -3,8 +3,7 @@ from typing import List, Tuple, Union
 
 import torch
 from torch.nn.functional import cosine_similarity
-from apps.diagraph.dialogdesigner import DialogDesigner
-from apps.diagraph.data.dialogGraph import DialogGraph, DialogNode, NodeType
+from apps.diagraph.data.dialogGraph import DialogGraph, DialogNode, NodeType, ConversationLogEntry
 
 from services.service import Service, PublishSubscribe
 from apps.diagraph.parsers.answerTemplateParser import AnswerTemplateParser
@@ -205,13 +204,15 @@ class SimilarityMatchingNLU(Service):
 
         return acts
         
-
+    def log_to_database(self, graph: DialogGraph, user_id: int, usr_utterance: str):
+        ConversationLogEntry(graph=graph, user=user_id, module="INPUT", content=usr_utterance).save()
 
     @PublishSubscribe(sub_topics=["user_utterance", "node_id", "graph_id", "beliefstate"], pub_topics=["user_acts", "beliefstate"], user_id=True)
     def extract_user_acts(self, user_id: int, graph_id: str, user_utterance: str, node_id: int, beliefstate: dict) -> dict(user_acts=List[UserAct]):
         logging.getLogger('chat').info(f"NLU (user: {user_id}, node: {node_id}) - input: {user_utterance}")
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graph_id)
+        self.log_to_database(graph, user_id, user_utterance)
 
         acts = []
         beliefstate = self.beliefstate[user_id] | beliefstate
