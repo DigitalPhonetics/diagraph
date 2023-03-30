@@ -3,7 +3,7 @@ DIAGRAPH: An open-source graphic interface for dialog flow design
 
 ## Live Demo
 
-!!! **NOTE: Hosting Server (bwcloud) is down for Maintenance from 30th of March to 31st of March, sorry for the inconvenience** !!!
+!!! **NOTE: The hosting provider (bwcloud) is down for maintenance from 30th of March to 31st of March, sorry for the inconvenience. We will make the service avaliable again as soon as the provider is done with maintenance (probably 1st of April)** !!!
 
 http://193.196.53.250:8000/
 
