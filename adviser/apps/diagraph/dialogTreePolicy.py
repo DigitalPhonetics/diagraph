@@ -1,5 +1,6 @@
 from enum import Enum
 import logging
+import traceback
 from attr import dataclass
 from typing import Dict, List, Tuple
 
@@ -110,6 +111,7 @@ class DialogTreePolicy(Service):
         return graph.get_start_node().connected_node
 
     async def on_dialog_start(self, user_id: str):
+        print("ON DIALOG START")
         self.turn[user_id] = 0
         self.node_id[user_id] = "-1"
         logging.getLogger('chat').info(f"POLICY (user: {user_id}, node: 0, turn: 0) - START")
@@ -118,6 +120,7 @@ class DialogTreePolicy(Service):
         try:
             return self.templateParser.parse_template(delexicalized_utterance, graph, beliefstate)
         except:
+            traceback.print_exc()
             return delexicalized_utterance
 
     def fillLogicTemplate(self, graph: DialogGraph, delexicalized_utterance: str, beliefstate: dict):
@@ -133,18 +136,9 @@ class DialogTreePolicy(Service):
                 var = self.answerParser.find_variable(answer.text)
                 if var.name:
                     # if answer is template, fill in example values
-                    example_bst = {}
-                    # if var.name == "LAND" and var.name not in beliefstate:
-                    #     for land in ["Deutschland", "USA", "England", "Frankreich", "Spanien", "Italien", "..."] :
-                    #         candidates.append(land)
-                    # elif var.name == "STADT" and var.name not in beliefstate and "LAND" in beliefstate:
-                    #     # return all known cities for country in beliefstate
-                    #     for stadt in [tagegeld.stadt for tagegeld in Tagegeld.objects.filter(land=beliefstate["LAND"]).all() if tagegeld.stadt != "$REST"]:
-                    #         candidates.append(stadt.capitalize())
-                    #     candidates.append("Andere Stadt")
                     if var.type == "BOOLEAN":
                         # return yes / no as answer option for boolean variable nodes
-                        candidates += ['ja', 'nein']
+                        candidates += ['yes', 'no']
             else:
                 # no template, just output answer
                 if ("[null]" not in answer.text) and ("Add a user response..." not in answer.text): # don't show skip node answers
@@ -313,6 +307,7 @@ class DialogTreePolicy(Service):
         # get context for current user and selected conversation graph
         graph: DialogGraph = DialogGraph.objects.get(uuid=graph_id)
 
+        print("TURN COUNT", turn_count)
         if turn_count == 0:
             # greeting message: find dialog entry node
             print("FIRST TURN")
@@ -502,6 +497,8 @@ class DialogTreePolicy(Service):
 
         if isinstance(node.connected_node, type(None)) and all([isinstance(ans.connected_node, type(None)) for ans in node.answers.all()]):
             tree_end_reached = True
+
+        print("ANSWER CANDIDATES", self.get_possible_answers(node, beliefstate))
 
         logging.getLogger('chat').info(f"POLICY (user: {user_id}, node: {node.key if node else 'None'}, turn: {turn_count}) - HANDLE NODE: SYS UTTERANCE: {sys_utterances}")    
         # if self.logger:

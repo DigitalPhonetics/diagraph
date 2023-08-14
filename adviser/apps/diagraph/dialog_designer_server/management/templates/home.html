@@ -11,10 +11,28 @@
                     // Button that triggered the modal
                     var button = event.relatedTarget;
                     // Extract info from data-bs-* attributes
-                    var recipient = button.getAttribute('data-bs-rename-url');
+                    const recipient = button.getAttribute('data-bs-rename-url');
                     // Update the modal's content.
                     var modalBodyInput = renameModal.querySelector("#renameForm");
                     modalBodyInput.action = recipient;
+                });
+            }
+
+            let settingsModal = document.getElementById('settingsModal');
+            if(settingsModal) {
+                settingsModal.addEventListener('show.bs.modal', (event) => {
+                    // Button that triggered the modal
+                    var button = event.relatedTarget;
+                    // Set form action
+                    const recipient = button.getAttribute('data-bs-change-settings-url'); 
+                    var modalBodyInput = settingsModal.querySelector("#settingsForm");
+                    modalBodyInput.action = recipient; 
+
+                    // Activate settings based on data attributes
+                    const display_answer_buttons = button.getAttribute('data-display-answer-buttons');
+                    settingsModal.querySelector('#displayAnswerButtons').checked = display_answer_buttons == "True";
+                    const allow_text_when_answer_buttons_shown = button.getAttribute('data-allow-text-when-answer-buttons-shown');
+                    settingsModal.querySelector('#allowTextWhenAnswerButtonsShown').checked = allow_text_when_answer_buttons_shown == "True";
                 });
             }
         });
@@ -22,6 +40,11 @@
         function rename(event){
             console.log("RENAME");
             document.getElementById("renameForm").submit();
+        }
+
+        function changeSettings(event){
+            console.log("change settings");
+            document.getElementById("settingsForm").submit();
         }
     </script>
 {% endblock %}
@@ -42,12 +65,44 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
             </div>
             <div class="modal-body">
-                <label for="exampleFormControlInput1" class="form-label">New Name</label>
+                <label for="newName" class="form-label">New Name</label>
                 <input type="text" class="form-control" name="newName" placeholder="new name...">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="rename()">Rename</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="settingsForm" action="" method="post">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Dialog Graph Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="displayAnswerButtons" value="true" id="displayAnswerButtons">
+                    <label class="form-check-label" for="displayAnswerButtons">
+                        Display answer suggestions in chat
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="allowTextWhenAnswerButtonsShown" value="true" id="allowTextWhenAnswerButtonsShown">
+                    <label class="form-check-label" for="allowTextWhenAnswerButtonsShown">
+                        Enable text input when suggestions are shown 
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="changeSettings()">Save</button>
             </div>
         </form>
       </div>
@@ -85,6 +140,12 @@
                             {% csrf_token %}
                             <button class="btn btn-secondary" type="submit" style="margin: 5px">Log</button> 
                         </form>
+                        <button class="btn btn-secondary" data-bs-change-settings-url="{% url 'change_settings' graphId=graph.uuid %}" data-bs-toggle="modal" data-bs-target="#settingsModal" 
+                                data-display-answer-buttons="{{graph.settings.display_answer_buttons}}"
+                                data-allow-text-when-answer-buttons-shown="{{graph.settings.allow_text_when_answer_buttons_shown}}"
+                                style="margin: 5px">
+                            Settings
+                        </button>
                       </div>
                   </td>
               </tr>

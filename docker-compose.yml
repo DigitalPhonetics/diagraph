@@ -25,7 +25,7 @@ services:
     build: 
       context: .
       dockerfile: ./adviser/Dockerfile
-    command: python3 /django_code/test.py tree --debug --noconsole
+    command: python3 /django_code/run_dialogsystem.py tree --debug --noconsole
     volumes:
       - ./adviser:/django_code
     depends_on:

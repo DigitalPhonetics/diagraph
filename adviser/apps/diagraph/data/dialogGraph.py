@@ -138,11 +138,34 @@ class ConversationLogEntry(models.Model):
         app_label = 'data'
 
 
+
+class SimilarityModelType(models.TextChoices):
+    MULTILINGUAL = "MULTILINGUAL", _("sentence-transformers/distiluse-base-multilingual-cased-v2")
+    ENGLISH = "ENGLISH", _("sentence-transformers/all-mpnet-base-v2")
+
+    class Meta:
+        app_label = 'data'
+
+class DialogGraphSettings(models.Model):
+    key = models.BigAutoField(primary_key=True)
+    display_answer_buttons = models.BooleanField(default=True)
+    allow_text_when_answer_buttons_shown = models.BooleanField(default=True)
+    similarity_model = models.CharField(
+        max_length=150,
+        choices=SimilarityModelType.choices,
+        default=SimilarityModelType.MULTILINGUAL,
+    )
+
+    class Meta:
+        app_label = 'data'
+
+
 class DialogGraph(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # unique and anonymous graph name (public links, editing) - not a
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="graphs")
     name = models.TextField()
     first_node = models.OneToOneField(DialogNode, null=True, on_delete=models.SET_NULL, default=None)
+    settings = models.OneToOneField(DialogGraphSettings, on_delete=models.CASCADE, default=None)
 
     class Meta:
         app_label = 'data'
@@ -157,12 +180,12 @@ class DialogGraph(models.Model):
         Returns:
             list of all rows (including only the subset of columns specified in return_columns) satisfying the constraints
         """
-        if not self.graph.tables.exists(name=table_name):
+        if not self.tables.filter(name=table_name).exists():
             warnings.warn("Data table", table_name, "not found")
             return []
 
         # load and parse table
-        csv_file = StringIO(self.graph.tables.get(name=table_name).content)
+        csv_file = StringIO(self.tables.get(name=table_name).content)
         table = pandas.read_csv(csv_file, delimiter=";")     
 
         # create list of row indices (start: all rows are candidates)
@@ -179,7 +202,9 @@ class DialogGraph(models.Model):
         return self.first_node
 
     def copyToUser(self, user: User):
-        graph = DialogGraph(owner=user, name=self.name)
+        default_settings = DialogGraphSettings()
+        default_settings.save()
+        graph = DialogGraph(owner=user, name=self.name, settings=default_settings)
         graph.save()
 
         for node in self.nodes.all():
@@ -207,6 +232,26 @@ class DialogGraph(models.Model):
         graph.first_node = graph.nodes.get(key=self.first_node.key)
         graph.save()
 
+    def clear_nodes(self, delete_start_node: bool = True):
+        for node in self.nodes.all():
+            node.connected_node = None
+            node.save()
+            for incoming in node.incoming_nodes.all():
+                incoming.connected_node = None
+                incoming.save()
+            for answer in node.answers.all():
+                answer.connected_node = None
+                answer.save()
+                answer.delete()
+            for answer in node.incoming_answers.all():
+                answer.connected_node = None
+                answer.save()
+            if node.key != self.first_node.key:
+                node.delete()
+            elif delete_start_node:
+                # only delete start node if whole graph should be deleted
+                node.delete()
+
 
     @classmethod
     def fromJSON(cls, graph_name: str, owner: User, data: str):
@@ -217,17 +262,25 @@ class DialogGraph(models.Model):
             tag_by_key = {}
             start_node = None
 
+            print("IMPORTING...")
+
             # clear existing values 
             if cls.objects.filter(name=graph_name, owner=owner).exists():
-                cls.objects.delete(name=graph_name)      
-
-            # create new graph
-            graph = cls(owner=owner, name=graph_name) 
-            graph.save()
+                graph = cls.objects.get(name=graph_name, owner=owner)
+                graph.first_node.delete()
+                graph.clear_nodes(delete_start_node=False)
+                graph.logs.all().delete()
+                graph.tables.all().delete()
+                graph.tags.all().delete()
+            else:
+                # create new graph
+                default_settings = DialogGraphSettings()
+                default_settings.save()
+                graph = cls(owner=owner, name=graph_name, settings=default_settings) 
             
             for tag_json in data['tags']:
                 tag = Tag(key=tag_json['id'], color=tag_json['color'], graph=graph)
-                tag_by_key[tag_json['id']] = tag 
+                tag_by_key[tag_json['id']] = tag
             Tag.objects.bulk_create(tag_by_key.values())
             for dialognode_json in data['nodes']:
                 # parse node info (have to create all nodes before we can create the answers because they can be linked to otherwise not yet existing nodes)

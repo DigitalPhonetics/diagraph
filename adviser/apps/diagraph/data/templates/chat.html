@@ -1,0 +1,476 @@
+<html>
+{% csrf_token %}
+{% load static %}
+{% block scripts %}
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<!-- bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+<!-- font awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- autobahn -->
+<script type="text/javascript" src="{% static 'js/autobahn.min.js' %}"></script>
+
+<style>
+    body {
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .mainContainer {
+        height: 100%;
+        display: flex;
+        flex-flow: column nowrap;
+        gap: 0px;
+    }
+    .contentFooterDivider {
+        display: flex;
+        flex-flow: column;
+        flex-grow: 1;
+        background-color: white;
+        margin: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 1rem;
+        min-width: 30rem;
+        max-width: 60rem;
+        height: calc(100% - 2.5rem - 0.25em - 4.5rem);
+    }
+    
+    .commanBtnBar {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        width: 100%;
+        min-height: 2.5rem;
+        border-top-left-radius: 1em;
+        border-top-right-radius: 1em;
+        gap: 0.25em;
+        background-color:  #323232;
+        padding: 0.25em;
+        padding-left: 0.75em;
+        z-index: 10;
+    }
+    .messagebox
+    {
+        padding: 1.5em;
+        flex-grow: 1;
+        flex-flow: row nowrap;
+        overflow-y: auto;
+        min-height: 20rem;
+    }
+    .inputContainer
+    {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        width: 100%;
+        background-color:  #323232;
+        padding: 0.75em;
+        border-bottom-left-radius: 1em;
+        border-bottom-right-radius: 1em;
+    }
+    footer {
+        font-size: 0.8rem;
+        margin: 0px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+    footer a {
+        color: white;
+        padding-right: 0.5rem;
+    }
+
+    .mailsvg {
+        width: 1.5em;
+        height: 1.5em;
+    }
+    .mailsvg:hover path {
+        stroke: red;
+        fill: red;
+        
+    }
+   
+    .speech-bubble { 
+        position: relative;
+        border-radius: .4em;
+        clear: both;
+        margin-bottom: 1em;
+        margin-top: 1em;
+        padding-bottom: 0.5em;
+        font-size: 1rem;
+    }
+    .speech-bubble::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 0;
+        height: 0;
+        border: 21px solid transparent;
+        border-top: 0;
+        margin-top: -10px;
+    }
+
+    .system {
+        background: #E5E5EA;  
+        text-align: left;
+        float: left;
+    }
+    .system:after {
+        left: 0;
+        border-right-color: #E5E5EA;
+        border-left: 0;
+        margin-left: -20px;
+    }
+    .user {
+        background: #ccf2ff;
+        text-align: right;
+        float: right;
+    }
+    .user:after {
+        right: 0;
+        border-left-color: #ccf2ff;
+        border-right: 0;
+        margin-right: -20px;
+    }
+
+    .message {
+        padding: 0.5em;
+        color: black;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .systemMsg {
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+        margin-top: 0.5em;
+        border-radius: .4em;
+        padding: 0.5em;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .answer_candidate_list {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.2em;
+        align-items: center;
+    }
+    .answer_candidate {
+        color: black;
+        border-radius: 2px;
+        background-color: #F5F5FA;
+        padding: 0.3em;
+        cursor: pointer;
+    }
+    .answer_candidate:hover {
+         background-color: #ccf2ff;
+    }
+
+    .divBtn {
+        font-family: Arial, Helvetica, sans-serif;
+        color: white;
+        border-radius: 0.25em;
+        height: 2em;
+        text-decoration: none;
+        /* line-height: 2em; */
+        border: none;
+        max-height: 2em;
+        padding-left: 0.2em;
+        padding-right: 0.2em;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-flow: row wrap;
+        gap: 0.3em;
+    }   
+    .divBtn:hover {
+        background-color: white;
+        color: black;
+    }
+
+    .divBtn:after {
+        border-left: 2px solid white;
+        height: 1em;
+        content: '';
+        margin-left: 0.5em;
+    }
+
+    .headerBtn {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #00BEFF;
+        color: white;
+        border-radius: 0.25em;
+        height: 2em;
+        text-decoration: none;
+        text-align: center;
+        line-height: 2em;
+        border: none;
+        max-height: 2em;
+        padding-left: 0.2em;
+        padding-right: 0.2em;
+        cursor: pointer;
+    }
+    .headerBtn:hover {
+        background-color: white;
+        color: black;
+    }
+
+    @media (max-width: 992px) {  
+        p, body, span {font-size: 2rem;}
+    
+        .contentFooterDivider {
+            border-radius: 2rem;
+        }
+        .commanBtnBar {
+            min-height: 8rem;
+            gap: 0.1rem;
+            padding: 0.1rem;
+            padding-left: 0.3rem;
+        }
+    }
+
+    .userinput {
+        font-size: 1rem;
+        height: 2rem;
+        flex: 1;
+    }
+
+</style>
+
+<script>
+    var sessionRef = null;
+    
+    // state
+    var messages = [];
+    var nodeId = 0;
+    var enabled = false;
+    var newMessages = null;
+    var answerCandidates = null;
+
+    // settings
+    const showAnswerButtons = "{{settings.display_answer_buttons}}" === "True";
+    const allowTextWhenAnswerButtonsShown = "{{settings.allow_text_when_answer_buttons_shown}}" === "True";
+    
+    // ids
+    const graphId = new URLSearchParams(window.location.search).get("graphId");
+    const userId = "{{request.session.session_key}}";
+    
+    // logs
+    console.log(userId);
+    console.log(graphId);
+
+
+    const socket = new autobahn.Connection({
+        url: `ws://${window.location.hostname}:8083/ws`,
+        realm: "adviser"
+    });
+    socket.onopen = function (session, details) {	
+        console.log("Session established CHAT for user", userId, details);
+        sessionRef = session; 
+        session.subscribe(`sys_utterances.tree.${userId}`, (args, kwargs) => {
+            console.log("GOT MSG", args, kwargs);
+            newMessages = kwargs['sys_utterances'];
+            if(answerCandidates !== null) {
+                addSystemMessage(newMessages, answerCandidates);
+                // reset state
+                newMessages = null;
+                answerCandidates = null;
+            }
+        }, {match: "prefix"});
+        session.subscribe(`node_id.tree.${userId}`, (args, kwargs) => {
+            console.log("GOT NODE ID", args, kwargs);
+            nodeId = kwargs['node_id'];
+        }, {match: "prefix"});
+        session.subscribe(`answer_candidates.tree.${userId}`, (args, kwargs) => {
+            console.log("GOT ANSWER CANDIDATES", args, kwargs);
+            answerCandidates = kwargs['answer_candidates'];
+            if(newMessages !== null) {
+                addSystemMessage(newMessages, answerCandidates);
+                // reset state
+                newMessages = null;
+                answerCandidates = null;
+            }
+        });
+        session.subscribe(`tree_end_reached.tree.${userId}`, (args, kwargs) => {
+            console.log("TREE END REACHED");
+            enabled = !kwargs['tree_end_reached'];
+        }, {match: "prefix"});
+        restartDialog(); // start dialog automatically
+    }
+    socket.onclose = function(session, details) {
+        console.log("Session closed CHAT", details);
+        return true;
+    }
+    socket.open();
+    socket.onerror = (event) => {
+        console.log('error');
+        addSystemMessage([[
+            "The server seems to be down. Please contact support.",
+            "infoNode"
+        ]], []);
+    }
+
+    const restartDialog = () => {
+        console.log("RESTART DIALOG", userId);
+        
+        // reset state
+        messages = [];
+        newMessages = null;
+        answerCandidates = null;
+
+        // trigger start message
+        sessionRef.publish(`dialogsystem.start.${userId}`, [], {"user_id": userId});
+        
+        setTimeout(() => {
+            console.log("publishing to gen user utterance");
+            // sessionRef.current!.publish("gen_user_utterance", [], {gen_user_utterance: "", user_id: 0});
+            sessionRef.publish(`graph_id.tree.${userId}`, [], {graph_id: graphId, user_id: userId});
+            sessionRef.publish(`user_acts.tree.${userId}`, [], {user_acts: [], user_id: userId});
+            sessionRef.publish(`beliefstate.tree.${userId}`, [], {beliefstate: {}, user_id: userId});
+
+            setTimeout(() => {
+                enabled = true;
+            }, 10);
+        }, 100);
+    }
+
+    function addUserMessage(query) {
+        /*
+        Adds a new messagebox to the message list
+        Args:
+            query (String): the user query
+        */
+        messages.push(`USER: ${query}`);
+        $("#messagelist").append(`
+            <div class="speech-bubble user">
+                <div class="message" style="color: anthrazit">${query}</div>
+            </div>
+        `);
+
+        $("#messagelist").animate({ scrollTop: $('#messagelist').prop("scrollHeight")}, 500); // scroll to newest message
+    }
+
+    function addSystemMessage(msg_list, answer_candidates) {
+        /*
+        Adds a new messagebox to the message list
+        Args:
+            qa_list (List[{question: str, answer: str}]): the user query
+        */
+        var sys_msg = '';
+        
+        if(!allowTextWhenAnswerButtonsShown) {
+            $('#userinput').prop('disabled', true);
+            $('#userinput').prop('placeholder', 'Please click one of the answer suggestions');
+            $('#userinput').hide(); 
+            $('#btnSend').hide();
+        }
+
+        // console.log(msg_list);
+        msg_list.forEach((msg, index) => {
+            messages.push(`SYS: ${msg[0]}`)
+            sys_msg += '<div class="speech-bubble system"><div class="systemMsg">'
+            if(msg[1] == "infoNode") {
+                // this is an info node, because no user input was possible for this message -> add info icon
+                sys_msg += `<svg style="position:absolute; top: 0.25em; right: 0.25em;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#004191" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg><br>`
+            } else {
+                if(msg[1] == 'userInputNode') {
+                    // this is a node that requires user input
+                    $('#userinput').prop('disabled', false);
+                    $('#userinput').prop('placeholder', 'Please enter your message here');
+                    $('#userinput').show(); 
+                    $('#btnSend').show();
+                }
+                // add question icon
+                sys_msg += `<svg style="position:absolute; top: 0.25em; right: 0.25em;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#f58742" class="bi bi-question-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                </svg><br>`
+            }
+            sys_msg += `${msg[0]}`
+
+            // render answer candidates
+            if(showAnswerButtons && index == msg_list.length - 1) {
+                const answer_canidate_list = answer_candidates.map(cand => 
+                    cand === "..."? `<span class="answer_candidate" onclick="alert('Please type into the text input field')">${cand}</span>` : `<span class="answer_candidate" onclick="sendMessage('${cand}')">${cand}</span>`
+                ).join("");
+                if(answer_canidate_list.length > 0) {
+                    sys_msg += `<div class="answer_candidate_list">
+                            <span style="color: #75757A">What can I say?</span>
+                            ${answer_canidate_list}
+                        </div>`
+                }
+            }
+            sys_msg += "</div></div>";
+        });
+        // add new messages, and scroll to last message
+        $("#messagelist").append(sys_msg);
+        $("#userinput").focus();
+        $("#messagelist").animate({ scrollTop: $('#messagelist').prop("scrollHeight")}, 500); // scroll to newest message
+
+    }
+
+    function sendMessage(user_utterance) {
+        console.log('sending msg', user_utterance);
+        const user_input = $("#userinput").val(); // get user input from input field
+
+        // remove old answer candidates from previous system message
+        $('.answer_candidate_list').remove();
+
+        // select as message either input from textfield or candidate from answer list
+        const msg_content = user_utterance.length > 0? user_utterance : user_input;
+
+        sessionRef.publish(`gen_user_utterance.${userId}`, [], {gen_user_utterance: msg_content, user_id: userId});
+        sessionRef.publish(`graph_id.${userId}`, [], {graph_id: graphId, user_id: userId});
+        
+        addUserMessage(msg_content);
+        
+        $('#userinput').val(""); // reset text
+    }
+
+    function enterKeyDown(e) {
+        if(e.key === "Enter") {
+            sendMessage("");
+        }
+    }
+</script>
+
+{% endblock %}
+
+{% block content %}
+<body>
+    <div class="mainContainer">
+        
+        <div class="contentFooterDivider">
+            <div class="commanBtnBar">
+                <div class='divBtn' onclick="restartDialog()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                    </svg>
+                    Dialog Neustart
+                </div>
+            </div>
+
+            <div id="messagelist" class="messagebox"></div>
+
+            <div class="inputContainer">
+                <input id="userinput" class="userinput" placeholder="Please enter your message here" onkeydown="enterKeyDown(event)"/>
+                <div class="headerBtn" id='btnSend' onclick="sendMessage('')">Senden</div>
+            </div>
+        </div>
+
+        <footer>
+            <!-- <a href='https://www.uni-stuttgart.de/impressum/'>Impressum</a> -->
+            <!-- <a href="{% static 'dashboard/privacy.html' %}">Datenschutz</a> -->
+        </footer>
+    </div>
+
+</body>
+
+{% endblock %}
+
+</html>

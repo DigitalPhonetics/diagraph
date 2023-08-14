@@ -12,7 +12,7 @@ import { IDataTable } from "../../types";
 
 const DataTableImportButton = () => {
   const hiddenFileInput = React.useRef<HTMLInputElement>(null);
-  const setDataTable = useStoreActions((actions) => actions.setDataTable);
+  const addDataTable = useStoreActions((actions) => actions.addDataTable);
   const session = useStoreState((state) => state.session);
   const graphId = useStoreState((state) => state.graphId);
   
@@ -25,7 +25,7 @@ const DataTableImportButton = () => {
     session!.call("dialogdesigner.datatable.import", [], {data: content, name: fileUploaded.name, graphId: graphId}).then(resp => {
         console.log("RESP", resp);
         if(resp !== false) {
-          setDataTable(resp as IDataTable[]);
+          addDataTable(resp as IDataTable);
         }
         else {
           console.log("Error");

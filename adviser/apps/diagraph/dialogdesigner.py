@@ -5,15 +5,20 @@ from io import StringIO
 from apps.diagraph.data.dialogGraph import DataTable, DialogGraph, DialogNode, NodeType, Question, Answer, DataTableColumn, Tag
 from django.db import transaction
 from services.service import Service
+import os 
+import traceback
 
-# configuration (per user) for public service to prevent misuse
-# GRAPH_LIMIT_PER_USER = 10 # NOTE: defined in dialog_graphs.html
-# configuration (per graph) for public service to prevent misuse
-NODE_LIMIT_PER_GRAPH = 100
-TABLE_LIMIT_PER_GRAPH = 10
-ANSWER_LIMIT_PER_NODE = 10
-FAQ_LIMIT_PER_NODE = 25
-TEXT_LENGTH_LIMIT = 1000
+
+# configuration (per user) for public service to prevent misuse (configured in `config.env`)
+def get_limit(env_var_name: str):
+    configured_limit = int(os.environ[env_var_name])
+    return configured_limit if configured_limit >= 0 else None
+
+NODE_LIMIT_PER_GRAPH = get_limit('NODE_LIMIT_PER_GRAPH')
+TABLE_LIMIT_PER_GRAPH = get_limit('TABLE_LIMIT_PER_GRAPH')
+ANSWER_LIMIT_PER_NODE = get_limit('ANSWER_LIMIT_PER_NODE')
+FAQ_LIMIT_PER_NODE = get_limit('FAQ_LIMIT_PER_NODE')
+TEXT_LENGTH_LIMIT = get_limit('TEXT_LENGTH_LIMIT')
 
 # TODO re-enable tags
 # TODO all add / rename functions should return boolean now: quota exceeded or not
@@ -80,7 +85,7 @@ class DialogDesigner(Service):
         node.tags.remove(tag)
 
     def on_graph_rename(self, graphId: str, newName: str) -> bool:
-        if len(newName) > TEXT_LENGTH_LIMIT:
+        if not isinstance(TEXT_LENGTH_LIMIT, type(None)) and len(newName) > TEXT_LENGTH_LIMIT:
             return False
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
@@ -117,10 +122,12 @@ class DialogDesigner(Service):
                 "columns": columns
             }
         except:
+            print("Problem while uploading data table:")
+            traceback.print_exc()
             return False
 
     def on_datatable_name_changed(self, graphId: str, oldName: str, newName: str) -> bool:
-        if len(newName) > TEXT_LENGTH_LIMIT:
+        if not isinstance(TEXT_LENGTH_LIMIT, type(None)) and len(newName) > TEXT_LENGTH_LIMIT:
             return False
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
@@ -135,21 +142,27 @@ class DialogDesigner(Service):
     def on_datatable_delete(self, graphId: str, name: str):
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
         table: DataTable = graph.tables.get(name=name)
+        table.columns.all().delete()
 
         table.delete() 
 
         print("DELETED DATA TABLE", name)
 
-    def on_file_import(self, json_data: dict):
-        # TODO how to handle upload limits here?
-        graph = DialogGraph.fromJSON(json_data)
-        print("IMPORT TREE with", len(graph._node_list), "nodes")
+    def on_file_import(self, json_data: dict, graphId: str):
+        # TODO how to handle upload limits here
+        print("ON FILE IMPORT")
+        old_graph = DialogGraph.objects.get(uuid=graphId)
+        owner = old_graph.owner
+        graph_name = old_graph.name
+
+        graph = DialogGraph.fromJSON(graph_name=graph_name, owner=owner, data=json_data)
+        print("IMPORTED TREE with", graph.nodes.count(), "nodes")
 
     def on_answer_add(self, graphId: str, nodeId: int, answer: dict) -> bool:
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
         node: DialogNode = graph.nodes.get(key=nodeId)
 
-        if node.answers.count() >= ANSWER_LIMIT_PER_NODE:
+        if not isinstance(ANSWER_LIMIT_PER_NODE, type(None)) and node.answers.count() >= ANSWER_LIMIT_PER_NODE:
             return False
 
         print(answer)
@@ -170,7 +183,7 @@ class DialogDesigner(Service):
         print("DELETED ANSWER")
 
     def on_answer_text_changed(self, graphId: str, nodeId: int, answerId: int, text: str) -> bool:
-        if len(text) > TEXT_LENGTH_LIMIT:
+        if not isinstance(TEXT_LENGTH_LIMIT, type(None)) and len(text) > TEXT_LENGTH_LIMIT:
             return False
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
@@ -197,7 +210,7 @@ class DialogDesigner(Service):
     def on_node_add(self, graphId: str, node: dict) -> bool:
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
 
-        if graph.nodes.count() >= NODE_LIMIT_PER_GRAPH:
+        if not isinstance(NODE_LIMIT_PER_GRAPH, type(None)) and graph.nodes.count() >= NODE_LIMIT_PER_GRAPH:
             return False
 
         nodeobj = DialogNode(key=node['id'], node_type=NodeType.from_real_value(node['type']),
@@ -216,7 +229,7 @@ class DialogDesigner(Service):
         return True
 
     def on_node_text_changed(self, graphId: str, nodeId: int, markup: str, raw: str) -> bool:
-        if len(markup) > TEXT_LENGTH_LIMIT:
+        if not isinstance(TEXT_LENGTH_LIMIT, type(None)) and len(markup) > TEXT_LENGTH_LIMIT:
             return False
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
@@ -326,7 +339,7 @@ class DialogDesigner(Service):
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
         node: DialogNode = graph.nodes.get(key=faq['nodeId'])
 
-        if node.questions.count() >= FAQ_LIMIT_PER_NODE:
+        if not isinstance(FAQ_LIMIT_PER_NODE, type(None)) and node.questions.count() >= FAQ_LIMIT_PER_NODE:
             return False
 
         question = Question(key=faq['id'], text=faq['text'], node=node)
@@ -345,7 +358,7 @@ class DialogDesigner(Service):
         print("DELETED FAQ")
 
     def on_faq_text_changed(self, graphId: str, nodeId: int, faqId: int, text: str) -> bool:
-        if len(text) > TEXT_LENGTH_LIMIT:
+        if not isinstance(TEXT_LENGTH_LIMIT, type(None)) and len(text) > TEXT_LENGTH_LIMIT:
             return False
 
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)

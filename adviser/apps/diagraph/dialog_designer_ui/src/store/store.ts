@@ -177,7 +177,8 @@ interface StoreModel  {
 
 	// data tables
 	dataTables: IDataTable[];
-	setDataTable: Action<StoreModel, IDataTable[]>;
+	addDataTable: Action<StoreModel, IDataTable>;
+	setDataTables: Action<StoreModel, IDataTable[]>;
 	changeDataTableName: Thunk<StoreModel, ThunkArgs<DataTableNameChangeArgs>>;
 	_changeDataTableName: Action<StoreModel, DataTableNameChangeArgs>;
 	deleteDataTable: Action<StoreModel, string>;
@@ -761,7 +762,11 @@ const initialStore: StoreModel = {
 		// push(state.undoStack, {fn: updateVariableReversible, inverseFn: revertVariableReversible, args: {varName: payload.varName, varType: payload.varType, oldVarName: payload.oldVarName, oldVarType: oldVarDef.varType}});
 		state.redoStack = [];
 	}),
-	setDataTable: action((state, payload) => {
+	addDataTable: action((state, payload) => {
+		state.dataTables.push(payload);
+		console.log("TABLE UPLOADED");
+	}),
+	setDataTables: action((state, payload) => {
 		state.dataTables = payload;
 		console.log("TABLES UPLOADED");
 	}),

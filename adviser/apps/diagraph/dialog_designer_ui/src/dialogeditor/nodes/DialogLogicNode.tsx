@@ -107,7 +107,7 @@ const DialogLogicEditor = (props: DialogLogicEditorProps) => {
 							<option value="FALSE">FALSE</option>
 						</FormSelect>}
 					{props.variableType !== "BOOLEAN" &&
-						<Form.Control type="text" defaultValue="TRUE" onChange={(evt) => setComparisonValue(evt.target.value)} value={comparisonValue} style={{textTransform: 'uppercase', textAlign: 'center'}}/>}
+						<Form.Control type="text" defaultValue="TRUE" onChange={(evt) => setComparisonValue(evt.target.value)} value={comparisonValue} style={{ textAlign: 'center'}}/>}
 					<Form.Text className="text-muted" id="_centeredFormText">
 						<p className="text-center">(Comparison Value)</p>
 					</Form.Text>

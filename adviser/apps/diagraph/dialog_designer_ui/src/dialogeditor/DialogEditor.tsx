@@ -313,9 +313,9 @@ const DialogEditor = () => {
 		importConnections(fileContent.connections);
 		importDataTables(fileContent.dataTables);
 		if(session) {
-			session.call("dialogdesigner.import", [fileContent], {});
+			session.call("dialogdesigner.import", [fileContent, graphId], {});
 		}
-	}, [importConnections, importNodes, importTags, session]);
+	}, [importConnections, importNodes, importTags, session, graphId]);
 	
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -657,7 +657,7 @@ const DialogEditor = () => {
 							<Alert.Heading>Error</Alert.Heading>
 							The action could not be executed because either
 							<ul>
-								<li>your quota was exceeded (100 nodes per graph, 10 answers per node, 10 tables per graph, text limit 1000 characters, 25 FAQs per node)</li>
+								<li>your quota was exceeded (either nodes per graph, answers per node, tables per graph, text character limit per node, or FAQs per node)</li>
 								<li>the server is not reachable</li>
 							</ul>
 							Try deleting some nodes

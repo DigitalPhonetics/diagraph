@@ -154,9 +154,11 @@ STATICFILES_DIRS = [
     # SERVER_BASE_DIR / "static",
     '/django_static/dialog_designer_ui/build',
     '/django_static/dialog_designer_ui/build/static',
-    '/django_static/chat_ui/build',
-    '/django_static/chat_ui/build/static'
+    '/django_static/data/static'
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join('media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

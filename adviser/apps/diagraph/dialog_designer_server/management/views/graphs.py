@@ -4,7 +4,7 @@ from django.http import HttpResponse
 
 import json
 
-from data.dialogGraph import DialogGraph, DialogNode, NodeType
+from data.dialogGraph import DialogGraph, DialogNode, NodeType, DialogGraphSettings
 
 
 
@@ -17,7 +17,9 @@ def graph_list(request):
 
 @login_required
 def create_graph(request):
-    graph = DialogGraph(owner=request.user, name="newGraph")
+    default_settings = DialogGraphSettings()
+    default_settings.save()
+    graph = DialogGraph(owner=request.user, name="newGraph", settings=default_settings)
     startNode = DialogNode(key=0, node_type=NodeType.START, graph=graph, text="START", markup="<p>START</p>", position_x=10, position_y=150)
     graph.save()
     startNode.save()
@@ -28,29 +30,7 @@ def create_graph(request):
 @login_required
 def delelete_graph(request, graphId: str):
     graph = DialogGraph.objects.get(owner=request.user, uuid=graphId)
-
-    for node in graph.nodes.all():
-        node.connected_node = None
-        node.save()
-        for incoming in node.incoming_nodes.all():
-            print("incoming pre", incoming.text, incoming.pk)
-            incoming.connected_node = None
-            incoming.save()
-            print("incoming post", incoming)
-        for answer in node.answers.all():
-            print("Forward", node.answers.count())
-            answer.connected_node = None
-            answer.save()
-            answer.delete()
-        for answer in node.incoming_answers.all():
-            print("Backward", node.incoming_answers.count())
-            answer.connected_node = None
-            answer.save()
-        if node.connected_node:
-            print("conn", node.connected_node.text)
-        print("DELET INCOMING COUNT", node.incoming_nodes.count())
-        node.delete()
-
+    graph.clear_nodes()
     graph.delete()
     return redirect("home")
 
@@ -60,6 +40,26 @@ def rename_graph(request, graphId: str):
     graph.name = request.POST['newName']
     graph.save()
     return redirect("home")
+
+@login_required
+def change_settings(request, graphId: str):
+    graph = DialogGraph.objects.get(owner=request.user, uuid=graphId)
+    
+    if "allowTextWhenAnswerButtonsShown" in request.POST and request.POST['allowTextWhenAnswerButtonsShown'] == "true":
+        graph.settings.allow_text_when_answer_buttons_shown = True
+    else:
+        graph.settings.allow_text_when_answer_buttons_shown = False
+    
+    if "displayAnswerButtons" in request.POST and request.POST['displayAnswerButtons'] == "true":
+        graph.settings.display_answer_buttons = True
+    else:
+        graph.settings.display_answer_buttons = False
+
+    print("SETTINGS", graph.settings.allow_text_when_answer_buttons_shown, graph.settings.display_answer_buttons)
+    
+    graph.settings.save()
+    return redirect('home')
+
 
 @login_required
 def edit_graph(request):
