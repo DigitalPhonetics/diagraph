@@ -1,13 +1,23 @@
-# diagraph
+# DIAGRAPH
 DIAGRAPH: An open-source graphic interface for dialog flow design
 
 ## Live Demo
 
 http://193.196.53.250:8000/
 
+Please note that the logging feature is disabled in the live demo in order to preserve user privacy.
+
+## Demonstration Video
+
+[Watch on Youtube](https://youtu.be/nEvw1Z3Iimc)
+
 ## User Guide
 
 You can find information on how to use diagraph [here](https://github.com/DigitalPhonetics/diagraph/wiki).
+
+## Screenshot of Dialog Editor Interface 
+
+<img width="1656" alt="Bildschirm­foto 2023-03-09 um 20 41 24" src="https://user-images.githubusercontent.com/48446789/224136244-5321d1c7-7cb0-435b-89f3-1939cb403ef3.png">
 
 
 ## Installation
