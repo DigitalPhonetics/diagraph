@@ -13,7 +13,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U adviser"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
   router:
     build: ./router
     volumes:
@@ -21,6 +21,11 @@ services:
     tty: true
     ports:
     - "8083:8083"
+    healthcheck:
+      test: ping -c 1 router > /dev/null 2>&1; echo $?
+      interval: 5s
+      timeout: 5s
+      retries: 10
   diagraph:
     build: 
       context: .
@@ -29,8 +34,10 @@ services:
     volumes:
       - ./adviser:/django_code
     depends_on:
-      - db
-      - router
+      db:
+        condition: service_healthy
+      router:
+        condition: service_healthy
     tty: true
     env_file:
       - "./config.env"
@@ -44,8 +51,10 @@ services:
       - /django_static
     tty: true
     depends_on:
-      - db
-      - diagraph
+      db:
+        condition: service_healthy
+      router:
+        condition: service_healthy
     ports:
      - "8000:8000"
     healthcheck:
