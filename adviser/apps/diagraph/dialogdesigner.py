@@ -210,7 +210,7 @@ class DialogDesigner(Service):
     def on_node_add(self, graphId: str, node: dict) -> bool:
         graph: DialogGraph = DialogGraph.objects.get(uuid=graphId)
 
-        if not isinstance(NODE_LIMIT_PER_GRAPH, type(None)) and graph.nodes.count() >= NODE_LIMIT_PER_GRAPH:
+        if (not (isinstance(NODE_LIMIT_PER_GRAPH, type(None)) or NODE_LIMIT_PER_GRAPH < 0)) and graph.nodes.count() >= NODE_LIMIT_PER_GRAPH:
             return False
 
         nodeobj = DialogNode(key=node['id'], node_type=NodeType.from_real_value(node['type']),
