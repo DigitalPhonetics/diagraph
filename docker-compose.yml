@@ -45,11 +45,12 @@ services:
       context: .
       dockerfile: ./adviser/dialog_designer_ui/Dockerfile
     command: npm start
+    working_dir: /dialog_designer_ui
     volumes:
       - ./adviser/dialog_designer_ui:/dialog_designer_ui
     tty: true
     ports:
-    - "8003:8003"
+    - "8003:3000"
   django:
     build:
       context: .
