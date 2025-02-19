@@ -5,6 +5,7 @@ autobahn [asyncio,serialization] ==24.4.2
 crispy-bootstrap5==0.7
 Django==5.1.6
 django-crispy-forms==2.3
+django-cors-headers==4.7.0
 lark==1.2.2.
 pandas==2.2.3
 sentence-transformers==3.4.1

@@ -1,3 +1,4 @@
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -66,8 +67,10 @@ def edit_graph(request):
     if not request.session.session_key:
         request.session.create()
     session_key = request.session.session_key
-    
-    return render(request, 'dialog_designer_ui/index.html', {"graphId": request.GET['graphId'], "user": request.user})
+    params = {"graphId": request.GET['graphId'], "user": request.user, "session": session_key}
+    url = f"http://localhost:8003?{urlencode(params)}"
+    print("Redirecting to", url)
+    return redirect(url)
 
 @login_required
 def load_graph(request, graphId: str):

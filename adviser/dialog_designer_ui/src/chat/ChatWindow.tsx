@@ -15,9 +15,14 @@ interface ChatMessage {
     nodeType: string,
 }
 
+function getSessionKey() {
+	return new URLSearchParams(window.location.search).get("session");
+}
+
 // TODO add variable explorer - also allows to upload / inspect data
 
 const ChatWindow = () => {
+    const userId = getSessionKey();
     const connectionRef = useRef<autobahn.Connection>();
     const sessionRef = useRef<autobahn.Session>();
     const [userMsg, setUserMsg] = useState("");
@@ -30,7 +35,6 @@ const ChatWindow = () => {
     const sendEnabled = useStoreState((state) => state.sendEnabled);
     const setSendEnabled = useStoreActions((actions) => actions.setSendEnabled);
     const graphId = new URLSearchParams(window.location.search).get("graphId");
-    const userId = (document.getElementById('useridtoken') as HTMLInputElement).value; 
     const setHideDebugMenu = useStoreActions((actions) => actions.setHideDebugMenu);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const nodes = useStoreState((state) => state.nodes);

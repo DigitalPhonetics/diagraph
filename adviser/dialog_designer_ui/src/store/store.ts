@@ -589,6 +589,7 @@ const initialStore: StoreModel = {
 		question.text = payload.text!;
 	}),
 	importNodes: action((state, payload) => {
+		console.log(payload);
 		state.connections = [];
 		state.nodes = payload.map((node) => {
 			if(node.type === 'userInputNode') {

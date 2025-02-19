@@ -52,6 +52,26 @@ const connectionExists = (edge: Edge, elements: Elements) => {
   );
 };
 
+function getCookie(name: string) {
+	const cookies = document.cookie.split(';');
+	console.log(cookies);
+	for (let i = 0; i < cookies.length; i++) {
+		const cookie = cookies[i].trim();
+		if (cookie.startsWith(`${name}=`)) {
+			return cookie.substring(`${name}=`.length, cookie.length);
+		}
+	}
+	return "";
+}
+
+function getCSRFToken() {
+	return getCookie("csrftoken");
+}
+
+
+function getSessionKey() {
+	return new URLSearchParams(window.location.search).get("session")!;
+}
 
 
 const dagreGraph = new dagre.graphlib.Graph({directed: true});
@@ -59,6 +79,9 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 
 
 const DialogEditor = () => {
+	const userId = getSessionKey();
+	console.log("Session", getSessionKey());
+	console.log("Token", getCSRFToken());
 	const server = useStoreState((state) => state.server);
 	const session = useStoreState((state) => state.session);
 	const setServer = useStoreActions((actions) => actions.setServer);
@@ -119,10 +142,9 @@ const DialogEditor = () => {
 	const setClickedAnswerId = useStoreActions((actions) => actions.setClickedAnswerId);
 	const clickedAnswerId = useStoreState((state) => state._clickedAnswerId);
     const {setCenter} = useZoomPanHelper();
-	const userId = (document.getElementById('useridtoken') as HTMLInputElement).value;
 	const setSendEnabled = useStoreActions((actions) => actions.setSendEnabled);
 
-	
+		
 	useEffect(() => {
 		if(clickedAnswerId) {
 			const connection = connections.find(conn => conn.sourceHandle === clickedAnswerId);
@@ -279,30 +301,43 @@ const DialogEditor = () => {
 	}, [nodes, variables])
 
 	const onLoad = useCallback(async () => {
-		let CSRFtoken = $('input[name=csrfmiddlewaretoken]').val();
+		let CSRFtoken = getCSRFToken();
 		console.log("LOADIN Graph... token", CSRFtoken);
 
-        $.post(`/data/load_graph/${graphId}`, { 
-            csrfmiddlewaretoken: CSRFtoken,
-			version: 1
-        }).then((response) => {
-			const data = JSON.parse(response);
-			console.log("got response", data);
-			if(data.nodes.length > 0) {
-				// don't overwrite start node if no connection can be established
-				importTags(data.tags);
-				importNodes(data.nodes);
-				importConnections(data.connections);
-				importDataTables(data.dataTables);
+		$.ajax({
+			url: `http://localhost:8000/data/load_graph/${graphId}`,
+			type: 'GET',
+			data: {
+				version: 1
+			},
+			xhrFields: { withCredentials: true },
+			beforeSend: function(xhr) {
+				// Add CSRF token to the request header before sending the request
+				xhr.setRequestHeader('X-CSRFToken', CSRFtoken);
+			},
+			success: function(response) {
+				const data = JSON.parse(response);
+				console.log("got response", data);
+				if (data.nodes.length > 0) {
+					// Don't overwrite start node if no connection can be established
+					importTags(data.tags);
+					importNodes(data.nodes);
+					importConnections(data.connections);
+					importDataTables(data.dataTables);
+				}
+			},
+			error: function(xhr, status, error) {
+				// Optional: Error callback
+				console.error('Error:', status, error);
 			}
 		});
-	}, [importConnections, importNodes, importTags, graphId]);
+	}, [graphId, importTags, importNodes, importConnections, importDataTables]);
 
 	useEffect(() => {
 		if(startNode) {
 			console.log('start node found');
 			fitView({ padding: 0.2, includeHiddenNodes: false });
-			setTimeout(() => {startDialog(userId);}, 500);
+			// setTimeout(() => {startDialog(userId);}, 500);
 			// setCenter(startNode!.position.x, startNode!.position.y, 1);
 		}
 	}, [startNode, fitView, startDialog, userId])
@@ -315,7 +350,7 @@ const DialogEditor = () => {
 		if(session) {
 			session.call("dialogdesigner.import", [fileContent, graphId], {});
 		}
-	}, [importConnections, importNodes, importTags, session, graphId]);
+	}, [importTags, importNodes, importConnections, importDataTables, session, graphId]);
 	
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars

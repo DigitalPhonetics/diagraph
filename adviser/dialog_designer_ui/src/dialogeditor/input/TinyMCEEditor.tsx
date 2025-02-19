@@ -1,5 +1,5 @@
 import { FC, ReactElement, useState } from 'react';
-import 'tinymce/tinymce';
+import 'tinymce';
 import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
 import 'tinymce/plugins/paste';

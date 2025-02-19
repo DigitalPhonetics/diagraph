@@ -42,11 +42,21 @@ DEBUG = os.environ.get('DJANGO_DEBUG')
 ALLOWED_HOSTS = [
     '*'
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8003',
+    'https://localhost:8003',
+]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8003',
+    'https://localhost:8003',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -66,6 +76,7 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,8 +163,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     # SERVER_BASE_DIR / "static",
-    '/django_static/dialog_designer_ui/build',
-    '/django_static/dialog_designer_ui/build/static',
+    # '/django_static/dialog_designer_ui/build',
+    # '/django_static/dialog_designer_ui/build/static',
     '/django_static/data/static'
 ]
 

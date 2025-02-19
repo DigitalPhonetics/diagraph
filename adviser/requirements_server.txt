@@ -1,6 +1,7 @@
 crispy-bootstrap5==2024.10
 Django==5.1.6
 django-crispy-forms==2.3
+django-cors-headers==4.7.0
 mypy-extensions==1.0.0
 oauthlib==3.2.2
 pandas==2.2.3

@@ -40,6 +40,16 @@ services:
     tty: true
     env_file:
       - "./config.env"
+  ui:
+    build:
+      context: .
+      dockerfile: ./adviser/dialog_designer_ui/Dockerfile
+    command: npm start
+    volumes:
+      - ./adviser/dialog_designer_ui:/dialog_designer_ui
+    tty: true
+    ports:
+    - "8003:8003"
   django:
     build:
       context: .

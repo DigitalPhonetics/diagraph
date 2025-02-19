@@ -1,0 +1,11 @@
+NLU (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 16765639240726110, turn: 0)
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 16765639240726110, turn: 0) - HANDLE NODE: TREE END REACHED False
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 16765691436881730) - INFO NODE: ("<p>Hi thanks for testing out this dialog designer tool! We're really happy for your help!</p>\n<p>This is an example of an information node, you can use it to tell a user something without expecting a response.</p>", 'infoNode')
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 16765691436881730, turn: 1) - HANDLE NODE: TREE END REACHED False
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 16765691436881730, turn: 1) - HANDLE NODE: SYS UTTERANCE: [("<p>Hi thanks for testing out this dialog designer tool! We're really happy for your help!</p>\n<p>This is an example of an information node, you can use it to tell a user something without expecting a response.</p>", 'infoNode'), ("<p>This is a Dialog Node: you can define a system output, and the expected responses from a user.&nbsp;Behind the scenes, we'll match the actual user input to the closest response you define!</p>\n<p>Do you want more tutorial or a fun example dialog?</p>", 'userResponseNode')]
+NLU (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
+NLU (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
+POLICY (user: bttfme6m6d0mmhlbatiycav47cp6udd5, node: 0, turn: 0) - START
