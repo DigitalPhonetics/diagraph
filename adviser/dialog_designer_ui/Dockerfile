@@ -1,14 +1,21 @@
-FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+FROM node:23 AS deps
+ENV NODE_OPTIONS=--openssl-legacy-provider
 
-RUN apt update && apt install -y nodejs npm
+WORKDIR /code
 
-ADD ./adviser/dialog_designer_ui/package.json /dialog_designer_ui/package.json
+COPY ./adviser/dialog_designer_ui/package.json /code/package.json
+COPY ./adviser/dialog_designer_ui/postinstall.mjs /code/postinstall.mjs
+COPY ./adviser/dialog_designer_ui/tsconfig.json /code/tsconfig.json
+# COPY ./adviser/dialog_designer_ui/config-overrides.js /code/config-overrides.js
 
-# Install NPM dependencies
-ADD ./adviser/dialog_designer_ui/postinstall.mjs /dialog_designer_ui/postinstall.mjs
-WORKDIR /dialog_designer_ui
 RUN npm install
-
-# Dependencies for tinymce
+RUN npm install react-app-rewired
 RUN npm run tinymce-postinstall
+
+
+FROM deps
+ENV NODE_OPTIONS=--openssl-legacy-provider
+WORKDIR /code
+COPY ./adviser/dialog_designer_ui /code
+COPY --from=deps /code .
+

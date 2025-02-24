@@ -23,7 +23,7 @@ const ContextMenu = (props: {clipboard: string[], onAddNode: Function, copy: Fun
     const [showMenu, setShowMenu] = useState(false);
     const outerProps = props;
 
-    const handleContextMenu = useCallback((e) => {
+    const handleContextMenu = useCallback((e: any) => {
         setShowMenu(true);
         e.preventDefault();
         e.stopPropagation();
