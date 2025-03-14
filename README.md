@@ -13,7 +13,7 @@ Please note that the logging feature is disabled in the live demo in order to pr
 
 ## User Guide
 
-You can find information on how to use diagraph [here](https://github.com/DigitalPhonetics/diagraph/wiki).
+[Read the Guide](https://github.com/DigitalPhonetics/diagraph/wiki).
 
 ## Screenshot of Dialog Editor Interface 
 
