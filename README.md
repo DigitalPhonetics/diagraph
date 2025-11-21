@@ -1,11 +1,6 @@
 # DIAGRAPH
 DIAGRAPH: An open-source graphic interface for dialog flow design
 
-## Live Demo
-
-http://193.196.53.250:8000/
-
-Please note that the logging feature is disabled in the live demo in order to preserve user privacy.
 
 ## Demonstration Video
 
